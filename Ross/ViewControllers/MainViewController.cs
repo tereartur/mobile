@@ -210,6 +210,11 @@ namespace Toggl.Ross.ViewControllers
                     PushViewController(new SignupViewController(), true);
                     break;
                     
+                case LeftViewController.MenuOption.Logout:
+                    RxChain.Send(new DataMsg.UnregisterPush());
+                    RxChain.Send(new DataMsg.ResetState());
+                    break;
+                    
 	            default:
                     RxChain.Send(new DataMsg.ResetState());
                     break;
