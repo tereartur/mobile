@@ -71,6 +71,22 @@ namespace Toggl.Ross.Theme
                 v.SetBackgroundImage(Color.Green.ToImage(), UIControlState.Normal);
                 v.SetTitleColor(Color.White, UIControlState.Normal);
             }
+
+            public static void NoUserTitle(UILabel v)
+            {
+                v.Font = Font.Main(20f);
+                v.TextColor = Color.OffBlack;
+                v.Text = "EmptyStatesFeedbackTitle".Tr();
+                v.TextAlignment = UITextAlignment.Center;
+            }
+
+            public static void NoUserSubtitle(UILabel v)
+            {
+                v.Font = Font.Main(16f);
+                v.TextColor = Color.OffSteel;
+                v.Text = "EmptyStatesFeedbackSubtitle".Tr();
+                v.TextAlignment = UITextAlignment.Center;
+            }
         }
     }
 }

@@ -87,7 +87,21 @@ namespace Toggl.Ross.Theme
                 v.TextAlignment = UITextAlignment.Right;
             }
 
+            public static void NoUserTitle(UILabel v)
+            {
+                v.Font = Font.Main(20f);
+                v.TextColor = Color.OffBlack;
+                v.Text = "EmptyStatesBoostProductivity".Tr();
+                v.TextAlignment = UITextAlignment.Center;
+            }
 
+            public static void NoUserSubtitle(UILabel v)
+            {
+                v.Font = Font.Main(16f);
+                v.TextColor = Color.OffSteel;
+                v.Text = "EmptyStatesSignUp".Tr();
+                v.TextAlignment = UITextAlignment.Center;
+            }
         }
     }
 }

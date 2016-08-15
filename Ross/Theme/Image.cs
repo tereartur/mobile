@@ -82,6 +82,9 @@ namespace Toggl.Ross.Theme
         public static UIImage TimerButtonPressed
             => UIImage.FromBundle("icon-timer-green");
 
+        public static UIImage ReportsImageNoUser
+        => UIImage.FromBundle("icon-reports-nouser");
+
         public static UIImage ReportsButton
             => UIImage.FromBundle("icon-reports");
 
@@ -93,6 +96,9 @@ namespace Toggl.Ross.Theme
 
         public static UIImage SettingsButtonPressed
             => UIImage.FromBundle("icon-settings-green");
+
+        public static UIImage FeedbackImageNoUser
+            => UIImage.FromBundle("icon-feedback-nouser");
 
         public static UIImage FeedbackButton
             => UIImage.FromBundle("icon-feedback");

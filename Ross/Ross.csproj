@@ -342,6 +342,12 @@
     <BundleResource Include="Resources\SignUpButtonPressed.png" />
     <BundleResource Include="Resources\SignUpButtonPressed%402x.png" />
     <BundleResource Include="Resources\SignUpButtonPressed%403x.png" />
+    <BundleResource Include="Resources\icon-reports-nouser.png" />
+    <BundleResource Include="Resources\icon-reports-nouser%402x.png" />
+    <BundleResource Include="Resources\icon-reports-nouser%403x.png" />
+    <BundleResource Include="Resources\icon-feedback-nouser.png" />
+    <BundleResource Include="Resources\icon-feedback-nouser%402x.png" />
+    <BundleResource Include="Resources\icon-feedback-nouser%403x.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />

@@ -21,6 +21,15 @@ namespace Toggl.Ross.Theme
                 v.TextAlignment = UITextAlignment.Center;
                 v.TextColor = Color.DarkGray;
             }
+
+            public static void SignUpForFreeButton(UIButton v)
+            {
+                v.TitleLabel.Font = Font.Main(16f);
+                v.SetTitleColor(Color.LightishGreen, UIControlState.Normal);
+                v.Layer.BorderColor = Color.LightishGreen.CGColor;
+                v.Layer.BorderWidth = 1;
+                v.Layer.CornerRadius = 30f;
+            }
         }
     }
 }
