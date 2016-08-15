@@ -10,6 +10,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using Toggl.Phoebe.Data.Models;
 using Toggl.Phoebe.Data;
+using Toggl.Phoebe.Helpers;
 
 namespace Toggl.Ross.ViewControllers
 {
@@ -79,7 +80,6 @@ namespace Toggl.Ross.ViewControllers
         {
             base.ViewDidAppear(animated);
 
-            Application.MarkLaunched();
             menu = new LeftViewController(OnMenuButtonSelected);
             View.Window.InsertSubview(menu.View, 0);
 
@@ -133,8 +133,10 @@ namespace Toggl.Ross.ViewControllers
 
             // TODO Rx @alfonso Keep this call here explicitly or init
             // the state with the request if user is logged.
-            if (emptyStack)
+            if (emptyStack && NoUserHelper.IsLoggedIn)
+            {
                 RxChain.Send(new ServerRequest.GetChanges());
+            }
 
             var logViewcontroller = new LogViewController();
             SetViewControllers(new[] { logViewcontroller }, !emptyStack);
@@ -165,7 +167,9 @@ namespace Toggl.Ross.ViewControllers
             });
 
             if (menu != null)
+            {
                 menu.ConfigureUserData(userData.Name, userData.Email, userData.ImageUrl);
+            }
         }
 
         private void OnMenuButtonSelected(LeftViewController.MenuOption option)
@@ -207,7 +211,7 @@ namespace Toggl.Ross.ViewControllers
                     break;
                     
 	            default:
-					RxChain.Send(new DataMsg.ResetState());
+                    RxChain.Send(new DataMsg.ResetState());
                     break;
             }
 

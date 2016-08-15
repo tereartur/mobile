@@ -22,3 +22,7 @@ node_modules
 .*yml
 .bitrise*
 TestResult.xml
+
+Ross/Ross.csproj
+
+Chandler/packages.config
