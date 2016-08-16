@@ -177,7 +177,7 @@ namespace Toggl.Ross.ViewControllers
         public override void ViewDidLayoutSubviews()
         {
             base.ViewDidLayoutSubviews();
-            defaultEmptyView.Frame = new CGRect(0, (View.Frame.Size.Height - 200f) / 2, View.Frame.Size.Width, 200f);
+            defaultEmptyView.Frame = new CGRect(0, 0, View.Frame.Size.Width, View.Frame.Height - timerBar.Frame.Height - UIApplication.SharedApplication.StatusBarFrame.Height);
             noUserEmptyView.Frame = new CGRect(0, 0, View.Frame.Size.Width, View.Frame.Height - timerBar.Frame.Height - UIApplication.SharedApplication.StatusBarFrame.Height);
             reloadView.Bounds = new CGRect(0f, 0f, View.Frame.Size.Width, 70f);
             reloadView.Center = new CGPoint(View.Center.X, reloadView.Center.Y);
@@ -196,7 +196,26 @@ namespace Toggl.Ross.ViewControllers
 
             if (nsIndex == null)
             {
-                floatingHeader.Hidden = true;
+                if (!NoUserHelper.IsLoggedIn)
+                {
+                    floatingHeader.Hidden = true;
+                }
+                else
+                {
+                    var dateHolder = new DateHolder(DateTime.Now);
+
+                    var frame = getFloatingHeaderFrame(dateHolder);
+
+                    if (frame == null)
+                    {
+                        floatingHeader.Hidden = true;
+                        return;
+                    }
+
+                    floatingHeader.Bind(dateHolder);
+                    floatingHeader.Frame = frame.Value;
+                    floatingHeader.Hidden = false;
+                }
             }
             else
             {

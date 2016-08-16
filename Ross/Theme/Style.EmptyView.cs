@@ -30,6 +30,28 @@ namespace Toggl.Ross.Theme
                 v.Layer.BorderWidth = 1;
                 v.Layer.CornerRadius = 30f;
             }
+
+            public static void Border(UIView v)
+            {
+                v.BackgroundColor = Color.Border;
+            }
+
+            public static void Item(UIView v)
+            {
+                v.BackgroundColor = Color.White;
+            }
+
+            public static void ItemContentDark(UIView v)
+            {
+                v.BackgroundColor = Color.DarkishGray;
+                v.Layer.CornerRadius = 4;
+            }
+
+            public static void ItemContent(UIView v)
+            {
+                v.BackgroundColor = Color.PinkishGrey;
+                v.Layer.CornerRadius = 4;
+            }
         }
     }
 }
