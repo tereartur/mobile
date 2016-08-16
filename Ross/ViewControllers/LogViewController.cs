@@ -223,7 +223,13 @@ namespace Toggl.Ross.ViewControllers
 
                 var sectionIndex = source.GetSectionCellIndexForIndex(tableView, nsIndex.Row);
 
-                var sectionVM = source.GetSectionViewModelAt(sectionIndex);
+                if (sectionIndex == null)
+                {
+                    floatingHeader.Hidden = true;
+                    return;
+                }
+
+                var sectionVM = source.GetSectionViewModelAt(sectionIndex.Value);
 
                 var frame = getFloatingHeaderFrame(sectionVM);
 
@@ -482,7 +488,7 @@ namespace Toggl.Ross.ViewControllers
                 this.floatingHeader.UpdateDuration();
             }
 
-            public int GetSectionCellIndexForIndex(UITableView tableView, int index)
+            public int? GetSectionCellIndexForIndex(UITableView tableView, int index)
             {
                 var i = index;
                 while (true)
@@ -491,6 +497,12 @@ namespace Toggl.Ross.ViewControllers
                     if (holder is ITimeEntryHolder)
                     {
                         i--;
+                        if (i < 0)
+                        {
+                            // this case happens when the list is messed up somehow
+                            // this happens some time after editing a time entry for a split second
+                            return null;
+                        }
                         continue;
                     }
 
