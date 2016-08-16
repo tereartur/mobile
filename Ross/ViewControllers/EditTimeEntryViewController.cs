@@ -47,6 +47,8 @@ namespace Toggl.Ross.ViewControllers
         private bool hideDatePicker = true;
         private readonly List<NSObject> notificationObjects = new List<NSObject>();
 
+        private CGSize keyboardSize;
+
         // to avoid weak references to be removed
         private Binding<string, string> durationBinding, projectBinding, clientBinding, descriptionBinding, taskBinding, projectColorBinding;
         private Binding<DateTime, DateTime> startTimeBinding, stopTimeBinding;
@@ -84,6 +86,10 @@ namespace Toggl.Ross.ViewControllers
 
         public override void LoadView()
         {
+            notificationObjects.Add(UIKeyboard.Notifications.ObserveWillHide(OnKeyboardNotification));
+            notificationObjects.Add(UIKeyboard.Notifications.ObserveWillShow(OnKeyboardNotification));
+                                    notificationObjects.Add(UIKeyboard.Notifications.ObserveWillChangeFrame(OnKeyboardNotification));
+
             durationButton = new UIButton().Apply(Style.NavTimer.DurationButton);
             durationButton.SetTitle(DefaultDurationText, UIControlState.Normal);  // Dummy content to use for sizing of the label
             durationButton.SizeToFit();
@@ -180,6 +186,12 @@ namespace Toggl.Ross.ViewControllers
             SuggestionMode = false;
         }
 
+        void OnKeyboardNotification(object sender, UIKeyboardEventArgs e)
+        {
+            bool isVisible = e.Notification.Name == UIKeyboard.WillShowNotification;
+            keyboardSize = isVisible ? e.FrameEnd.Size : e.FrameBegin.Size;
+        }
+
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
@@ -271,6 +283,9 @@ namespace Toggl.Ross.ViewControllers
                     trackedWrapperConstraints = VerticalLinearLayout(wrapper).ToLayoutConstraints();
                     break;
                 case LayoutVariant.Description:
+                    var insets = new UIEdgeInsets(0, 0, keyboardSize.Height, 0);
+                    autoComplete.ContentInset = insets;
+                    autoComplete.ScrollIndicatorInsets = insets;
                     trackedWrapperConstraints = new[]
                     {
                         descriptionTextField.AtTopOf(wrapper),
