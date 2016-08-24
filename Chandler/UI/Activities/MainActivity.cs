@@ -40,10 +40,7 @@ namespace Toggl.Chandler.UI.Activities
             .Build();
             googleApiClient.Connect();
 
-            if (CollectionChanged != null)
-            {
-                CollectionChanged(this, EventArgs.Empty);
-            }
+            CollectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public List<SimpleTimeEntryData> Data
@@ -92,10 +89,7 @@ namespace Toggl.Chandler.UI.Activities
                 }
             }
 
-            if (CollectionChanged != null)
-            {
-                CollectionChanged(this, EventArgs.Empty);
-            }
+            CollectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void OnDataChanged(IDataItem dataItem)
@@ -116,6 +110,7 @@ namespace Toggl.Chandler.UI.Activities
                     var en = new SimpleTimeEntryData(mapItem);
                     timeEntries.Add(en);
                 }
+
                 adapter.Timer.TimerEnabled = true;
             }
         }
@@ -134,9 +129,10 @@ namespace Toggl.Chandler.UI.Activities
                     error = tempEx;
                     Log.Error(Tag, error.Message);
                 }
+
                 await Task.Delay(RebindTime);
-            }
-            while (error != null || Data.Count == 0);
+            
+            } while (error != null || Data.Count == 0);
         }
 
         public void RequestStartStop()
@@ -174,12 +170,14 @@ namespace Toggl.Chandler.UI.Activities
         {
             get
             {
-                return WearableClass
+                var nodes = WearableClass
                        .NodeApi
                        .GetConnectedNodes(googleApiClient)
                        .Await()
-                       .JavaCast<INodeApiGetConnectedNodesResult> ()
+                       .JavaCast<INodeApiGetConnectedNodesResult>()
                        .Nodes;
+                
+                return nodes;
             }
         }
 

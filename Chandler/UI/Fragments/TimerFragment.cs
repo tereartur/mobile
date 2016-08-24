@@ -12,9 +12,8 @@ namespace Toggl.Chandler.UI.Fragments
 {
     public class TimerFragment : Fragment
     {
-        private readonly string greenButtonColor = "#ee4dd965";
-        private readonly string redButtonColor = "#eeff3c47";
-        private readonly string grayButtonColor = "#ee8f8f8f";
+        private readonly Color greenButtonColor = Color.ParseColor("#ee4dd965");
+        private readonly Color redButtonColor = Color.ParseColor("#eeff3c47");
 
         private readonly Handler handler = new Handler();
         private TextView DurationTextView;
@@ -31,11 +30,11 @@ namespace Toggl.Chandler.UI.Fragments
         {
             var view = inflater.Inflate(Resource.Layout.TimeEntryFragment, container, false);
 
-            ActionButton = view.FindViewById<ImageButton> (Resource.Id.testButton);
-            DurationTextView = view.FindViewById<TextView> (Resource.Id.DurationTextView);
-            DescriptionTextView = view.FindViewById<TextView> (Resource.Id.DescriptionTextView);
-            ProjectTextView = view.FindViewById<TextView> (Resource.Id.ProjectTextView);
-            ProgressBar = view.FindViewById<ProgressBar> (Resource.Id.TimerProgressBar);
+            ActionButton = view.FindViewById<ImageButton>(Resource.Id.testButton);
+            DurationTextView = view.FindViewById<TextView>(Resource.Id.DurationTextView);
+            DescriptionTextView = view.FindViewById<TextView>(Resource.Id.DescriptionTextView);
+            ProjectTextView = view.FindViewById<TextView>(Resource.Id.ProjectTextView);
+            ProgressBar = view.FindViewById<ProgressBar>(Resource.Id.TimerProgressBar);
 
             ActionButton.Click += OnActionButtonClicked;
 
@@ -49,10 +48,7 @@ namespace Toggl.Chandler.UI.Fragments
 
         public bool UserLoggedIn
         {
-            get
-            {
-                return userLoggedIn;
-            }
+            get { return userLoggedIn; }
             set
             {
                 userLoggedIn = value;
@@ -62,10 +58,7 @@ namespace Toggl.Chandler.UI.Fragments
 
         public bool TimerEnabled
         {
-            get
-            {
-                return timerEnabled;
-            }
+            get { return timerEnabled; }
             set
             {
                 timerEnabled = value;
@@ -73,62 +66,57 @@ namespace Toggl.Chandler.UI.Fragments
             }
         }
 
-        private SimpleTimeEntryData data
-        {
-            get
-            {
-                return activity.Data[0];
-            }
-        }
+        private SimpleTimeEntryData data => activity.Data[0];
 
         private void OnActionButtonClicked(object sender, EventArgs e)
-        {
-            activity.RequestStartStop();
-        }
-
+            => activity.RequestStartStop();
+       
         private void Rebind()
         {
-            if (!IsAdded)
-            {
-                return;
-            }
-
+            if (!IsAdded) return;
+           
             switch (CurrentState)
             {
                 case TimerState.New:
-                    ButtonColor = Color.ParseColor(greenButtonColor);
+                    ButtonColor = greenButtonColor;
                     ActionButton.SetImageDrawable(context.Resources.GetDrawable(Resource.Drawable.IcPlay));
                     DurationTextView.Text = Resources.GetString(Resource.String.DurationNotRunningState);
                     ProjectTextView.Text = Resources.GetString(Resource.String.TimerBlankIntroduction);
-                    DescriptionTextView.Text =  Resources.GetString(Resource.String.WearNewBlankDescription);
+                    DescriptionTextView.Text = Resources.GetString(Resource.String.WearNewBlankDescription);
                     break;
 
                 case TimerState.Running:
-                    ButtonColor = Color.ParseColor(redButtonColor);
+                    ButtonColor = redButtonColor;
                     ActionButton.SetImageDrawable(context.Resources.GetDrawable(Resource.Drawable.IcStop));
                     var dur = data.GetDuration();
                     DurationTextView.Text = TimeSpan.FromSeconds((long)dur.TotalSeconds).ToString();
                     ProjectTextView.Text = data.Project;
-                    DescriptionTextView.Text = String.IsNullOrWhiteSpace(data.Description)
+                    DescriptionTextView.Text = string.IsNullOrWhiteSpace(data.Description)
                                                ? Resources.GetString(Resource.String.TimeEntryNoDescription)
                                                : data.Description;
                     break;
 
                 case TimerState.Loading:
                     ActionButton.Visibility = ViewStates.Gone;
-                    ProgressBar.Visibility = ViewStates.Visible;
-                    DurationTextView.Text = userLoggedIn
-                                            ? Resources.GetString(Resource.String.TimerLoading)
-                                            : Resources.GetString(Resource.String.TimerWaiting);
-                    DescriptionTextView.Text = userLoggedIn
-                                               ? String.Empty
-                                               : Resources.GetString(Resource.String.TimerNotLoggedIn);
+
+                    if (UserLoggedIn)
+                    {
+                        DescriptionTextView.Text = string.Empty;
+                        ProgressBar.Visibility = ViewStates.Visible;
+                        DurationTextView.Text = Resources.GetString(Resource.String.TimerLoading);
+                    }
+                    else
+                    {
+                        ProgressBar.Visibility = ViewStates.Gone;
+                        DurationTextView.Text = Resources.GetString(Resource.String.TimerWaiting);
+                        DescriptionTextView.Text = Resources.GetString(Resource.String.TimerNotLoggedIn);
+                    }
                     break;
 
                 case TimerState.Waiting:
-                    ProjectTextView.Text = String.Empty;
+                    ProjectTextView.Text = string.Empty;
                     DescriptionTextView.Text = Resources.GetString(Resource.String.TimerRequestSent);
-                    DurationTextView.Text = String.Empty;
+                    DurationTextView.Text = string.Empty;
                     ActionButton.Visibility = ViewStates.Gone;
                     ProgressBar.Visibility = ViewStates.Visible;
                     break;

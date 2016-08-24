@@ -18,6 +18,7 @@ using Toggl.Joey.UI.Utils;
 using Toggl.Joey.UI.Views;
 using Toggl.Phoebe;
 using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe.Helpers;
 using Toggl.Phoebe.Reactive;
 using Toggl.Phoebe.ViewModels;
 using Toggl.Phoebe.ViewModels.Timer;
@@ -52,9 +53,9 @@ namespace Toggl.Joey.UI.Fragments
 
         #region Binding objects and properties.
 
-        public LogTimeEntriesVM ViewModel { get; private set;}
+        public LogTimeEntriesVM ViewModel { get; private set; }
         public IMenuItem AddNewMenuItem { get; private set; }
-        public StartStopFab StartStopBtn { get; private set;}
+        public StartStopFab StartStopBtn { get; private set; }
 
         #endregion
 
@@ -74,23 +75,23 @@ namespace Toggl.Joey.UI.Fragments
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             var view = inflater.Inflate(Resource.Layout.LogTimeEntriesListFragment, container, false);
-            view.FindViewById<TextView> (Resource.Id.EmptyTextTextView).SetFont(Font.RobotoLight);
-            coordinatorLayout = view.FindViewById<CoordinatorLayout> (Resource.Id.logCoordinatorLayout);
-            experimentEmptyView = view.FindViewById<View> (Resource.Id.ExperimentEmptyMessageView);
-            emptyMessageView = view.FindViewById<View> (Resource.Id.EmptyMessageView);
+            view.FindViewById<TextView>(Resource.Id.EmptyTextTextView).SetFont(Font.RobotoLight);
+            coordinatorLayout = view.FindViewById<CoordinatorLayout>(Resource.Id.logCoordinatorLayout);
+            experimentEmptyView = view.FindViewById<View>(Resource.Id.ExperimentEmptyMessageView);
+            emptyMessageView = view.FindViewById<View>(Resource.Id.EmptyMessageView);
             emptyMessageView.Visibility = ViewStates.Gone;
-            welcomeView = view.FindViewById<View> (Resource.Id.WelcomeLayout);
+            welcomeView = view.FindViewById<View>(Resource.Id.WelcomeLayout);
             welcomeView.Visibility = ViewStates.Gone;
 
             view.FindViewById<TextView>(Resource.Id.welcomeHelloTextView).SetFont(Font.TektonPro);
             view.FindViewById<TextView>(Resource.Id.welcomeSignInTextView).SetFont(Font.TektonPro);
             view.FindViewById<TextView>(Resource.Id.welcomeStartTextView).SetFont(Font.TektonPro);
 
-            recyclerView = view.FindViewById<RecyclerView> (Resource.Id.LogRecyclerView);
+            recyclerView = view.FindViewById<RecyclerView>(Resource.Id.LogRecyclerView);
             recyclerView.SetLayoutManager(new LinearLayoutManager(Activity));
-            swipeLayout = view.FindViewById<SwipeRefreshLayout> (Resource.Id.LogSwipeContainer);
+            swipeLayout = view.FindViewById<SwipeRefreshLayout>(Resource.Id.LogSwipeContainer);
             swipeLayout.SetOnRefreshListener(this);
-            StartStopBtn = view.FindViewById<StartStopFab> (Resource.Id.StartStopBtn);
+            StartStopBtn = view.FindViewById<StartStopFab>(Resource.Id.StartStopBtn);
 
             // set top timecounter view.
             var lp = new Android.Support.V7.App.ActionBar.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent, (int)GravityFlags.Right);
@@ -208,7 +209,7 @@ namespace Toggl.Joey.UI.Fragments
             var i = new Intent(Activity, typeof(EditTimeEntryActivity));
             i.PutStringArrayListExtra(
                 EditTimeEntryActivity.ExtraGroupedTimeEntriesGuids,
-                new List<string> { ViewModel.ActiveEntry.Data.Id.ToString()});
+                new List<string> { ViewModel.ActiveEntry.Data.Id.ToString() });
             Activity.StartActivity(i);
 
             return base.OnOptionsItemSelected(item);
@@ -250,7 +251,7 @@ namespace Toggl.Joey.UI.Fragments
                 var ids = new List<string> { activeEntry.Id.ToString() };
                 var intent = new Intent(Activity, typeof(EditTimeEntryActivity));
                 intent.PutStringArrayListExtra(EditTimeEntryActivity.ExtraGroupedTimeEntriesGuids, ids);
-                intent.PutExtra(EditTimeEntryActivity.IsGrouped,  false);
+                intent.PutExtra(EditTimeEntryActivity.IsGrouped, false);
                 StartActivity(intent);
             }
         }
@@ -258,10 +259,8 @@ namespace Toggl.Joey.UI.Fragments
         private void SetSyncState()
         {
             // Full sync method.
-            if (!swipeLayout.Refreshing)
-            {
-                return;
-            }
+            if (!swipeLayout.Refreshing) return;
+
             swipeLayout.Refreshing = ViewModel.IsFullSyncing;
             if (ViewModel.HasSyncErrors)
             {
@@ -310,13 +309,10 @@ namespace Toggl.Joey.UI.Fragments
 
         private void SetCollectionState()
         {
-            if (ViewModel.LoadInfo.IsSyncing && ViewModel.Collection.Count == 0)
-            {
-                return;
-            }
+            if (ViewModel.LoadInfo.IsSyncing && ViewModel.Collection.Count == 0) return;
 
-            View emptyView = emptyMessageView;
-            var isWelcome = ViewModel.WelcomeScreenShouldBeShown;
+            var emptyView = emptyMessageView;
+            var isWelcome = !NoUserHelper.IsLoggedIn && ViewModel.WelcomeScreenShouldBeShown;
             var hasItems = ViewModel.Collection.Count > 0;
             var isInExperiment = ViewModel.ExperimentShouldBeShown;
 
@@ -331,11 +327,15 @@ namespace Toggl.Joey.UI.Fragments
                 experimentEmptyView.Visibility = ViewStates.Gone;
             }
 
+            var showWelcome = isWelcome && !hasItems;
+
             // According to settings, show welcome message or no.
-            welcomeView.Visibility = (isWelcome && !hasItems) ? ViewStates.Visible : ViewStates.Gone;
+            welcomeView.Visibility = showWelcome ? ViewStates.Visible : ViewStates.Gone;
             emptyView.Visibility = (!isWelcome && !hasItems) ? ViewStates.Visible : ViewStates.Gone;
             recyclerView.Visibility = hasItems ? ViewStates.Visible : ViewStates.Gone;
+            swipeLayout.Visibility = showWelcome ? ViewStates.Gone : ViewStates.Visible;
         }
+
         #endregion
 
         private void SetupRecyclerView(LogTimeEntriesVM viewModel)

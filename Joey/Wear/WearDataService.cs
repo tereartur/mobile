@@ -14,6 +14,7 @@ using Java.Interop;
 using Java.Util.Concurrent;
 using Toggl.Joey.UI.Activities;
 using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe.Helpers;
 using Toggl.Phoebe.Reactive;
 
 namespace Toggl.Joey.Wear
@@ -21,8 +22,8 @@ namespace Toggl.Joey.Wear
     /// <summary>
     /// Listens to DataItems and Messages from the local node
     /// </summary>
-    [Service, IntentFilter(new [] { "com.google.android.gms.wearable.BIND_LISTENER" }) ]
-    public class WearDataService : WearableListenerService,  GoogleApiClient.IConnectionCallbacks
+    [Service, IntentFilter(new[] { "com.google.android.gms.wearable.BIND_LISTENER" })]
+    public class WearDataService : WearableListenerService, GoogleApiClient.IConnectionCallbacks
     {
         public const string Tag = "WearableTag";
         public const string DataStorePath = "/TimeEntryDataStore";
@@ -67,7 +68,7 @@ namespace Toggl.Joey.Wear
 
         private void SyncState(RichTimeEntry runningEntry)
         {
-            Task.Run(() => UpdateSharedTimeEntryList());
+            Task.Run(UpdateSharedTimeEntryList);
         }
 
         public override void OnDataChanged(DataEventBuffer dataEvents)
@@ -133,9 +134,8 @@ namespace Toggl.Joey.Wear
                     }
                     else if (path == Common.ContinueTimeEntryPath)
                     {
-
                         var guid = Guid.Parse(Common.GetString(message.GetData()));
-                        StartEntry(guid);
+                        await StartEntry(guid);
                     }
                     else if (path == Common.RequestSyncPath)
                     {
@@ -145,7 +145,6 @@ namespace Toggl.Joey.Wear
                     }
                     else if (path == Common.OpenHandheldPath)
                     {
-
                         StartMainActivity();
                     }
                 }
@@ -164,7 +163,7 @@ namespace Toggl.Joey.Wear
         {
             Task.Run(() =>
             {
-                var apiResult = WearableClass.NodeApi.GetConnectedNodes(googleApiClient) .Await().JavaCast<INodeApiGetConnectedNodesResult> ();
+                var apiResult = WearableClass.NodeApi.GetConnectedNodes(googleApiClient).Await().JavaCast<INodeApiGetConnectedNodesResult>();
                 var nodes = apiResult.Nodes;
                 foreach (var node in nodes)
                 {
@@ -191,11 +190,17 @@ namespace Toggl.Joey.Wear
 
         public async Task UpdateSharedTimeEntryList()
         {
+            if (!NoUserHelper.IsLoggedIn)
+            {
+                NotifyNotLoggedIn();
+                return;
+            }
+
             entryData = WearDataProvider.GetTimeEntryData();
 
             mapReq = PutDataMapRequest.Create(Common.TimeEntryListPath).SetUrgent();
 
-            currentDataMap = new List<DataMap> ();
+            currentDataMap = new List<DataMap>();
 
             foreach (var entry in entryData)
             {
@@ -224,7 +229,7 @@ namespace Toggl.Joey.Wear
                        .NodeApi
                        .GetConnectedNodes(googleApiClient)
                        .Await()
-                       .JavaCast<INodeApiGetConnectedNodesResult> ()
+                       .JavaCast<INodeApiGetConnectedNodesResult>()
                        .Nodes;
             }
         }

@@ -13,6 +13,7 @@ using Toggl.Joey.UI.Fragments;
 using Toggl.Joey.UI.Views;
 using Toggl.Phoebe.Data;
 using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe.Helpers;
 using Toggl.Phoebe.Logging;
 using Toggl.Phoebe.Reactive;
 using XPlatUtils;
@@ -48,13 +49,8 @@ namespace Toggl.Joey.UI.Activities
         private FrameLayout DrawerSyncView { get; set; }
         private Toolbar MainToolbar { get; set; }
 
-        bool userWithoutApiToken
-        {
-            get
-            {
-                return string.IsNullOrEmpty(StoreManager.Singleton.AppState.User.ApiToken);
-            }
-        }
+        private bool userWithoutApiToken
+            => string.IsNullOrEmpty(StoreManager.Singleton.AppState.User.ApiToken);
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -93,7 +89,7 @@ namespace Toggl.Joey.UI.Activities
                             .ObserveOn(SynchronizationContext.Current)
                             .StartWith(StoreManager.Singleton.AppState.User)
                             .DistinctUntilChanged(x => x.ApiToken)
-                            .Subscribe(userData => ResetFragmentNavigation(userData));
+                            .Subscribe(ResetFragmentNavigation);
         }
 
         protected override void OnDestroy()
@@ -119,18 +115,22 @@ namespace Toggl.Joey.UI.Activities
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            return DrawerToggle.OnOptionsItemSelected(item) || base.OnOptionsItemSelected(item);
-        }
-
+            => DrawerToggle.OnOptionsItemSelected(item) || base.OnOptionsItemSelected(item);
+       
         public void ResetFragmentNavigation(IUserData userData)
         {
-            // TODO : Don't let both name/email empty.
-            // maybe an elegant solution is possible.
-            DrawerUserName.Text = string.IsNullOrEmpty(userData.Name) ? "John Doe" : userData.Name;
-            DrawerEmail.Text = string.IsNullOrEmpty(userData.Email) ? "support@toggl.com" : userData.Email;
-            DrawerImage.ImageUrl = userData.ImageUrl;
+            var visibility = NoUserHelper.IsLoggedIn ? ViewStates.Visible : ViewStates.Gone;
+           
+            DrawerImage.Visibility = visibility;
+			DrawerEmail.Visibility = visibility;
+            DrawerUserName.Visibility = visibility;
 
+			// TODO : Don't let both name/email empty.
+			// maybe an elegant solution is possible.
+			DrawerUserName.Text = string.IsNullOrEmpty(userData.Name) ? "John Doe" : userData.Name;
+			DrawerEmail.Text = string.IsNullOrEmpty(userData.Email) ? "support@toggl.com" : userData.Email;
+			DrawerImage.ImageUrl = userData.ImageUrl;
+    
             if (tryMigrateDatabase(userData))
                 return;
 
