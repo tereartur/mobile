@@ -40,6 +40,7 @@ namespace Toggl.Ross.ViewControllers
         private TimerBar timerBar;
         private SectionCell floatingHeader;
         private float heightOfTopBars;
+        private Action<bool> shouldConfirmOnLogin;
 
         private Binding<LogTimeEntriesVM.LoadInfoType, LogTimeEntriesVM.LoadInfoType> loadInfoBinding, loadMoreBinding;
         private Binding<int, int> hasItemsBinding;
@@ -48,6 +49,11 @@ namespace Toggl.Ross.ViewControllers
         private Binding<ObservableCollection<IHolder>, ObservableCollection<IHolder>> collectionBinding;
 
         protected LogTimeEntriesVM ViewModel { get; set; }
+
+        public LogViewController(Action<bool> shouldConfirmOnLogin)
+        {
+            this.shouldConfirmOnLogin = shouldConfirmOnLogin;
+        }
 
         public override void LoadView()
         {
@@ -387,14 +393,15 @@ namespace Toggl.Ross.ViewControllers
 
         private void SetCollectionState()
         {
+            var hasItems = ViewModel.Collection.Count > 0;
+            shouldConfirmOnLogin(hasItems);
+
             // ATTENTION Needed condition to keep visible the list
             // while the first sync is finishing. Why? Because the scroll spinner
             // is used and we need the TableView visible.
             if (ViewModel.LoadInfo.IsSyncing && ViewModel.Collection.Count == 0) return;
 
             var emptyView = NoUserHelper.IsLoggedIn ? defaultEmptyView : noUserEmptyView;
-            var hasItems = ViewModel.Collection.Count > 0;
-
             tableView.TableFooterView = hasItems ? new UIView() : emptyView;
         }
 

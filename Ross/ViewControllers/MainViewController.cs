@@ -30,11 +30,13 @@ namespace Toggl.Ross.ViewControllers
         private const int velocityTreshold = 100;
         private LeftViewController menu;
 
-        private nfloat Width { get { return View.Frame.Width; } }
-        private nfloat CurrentX { get { return View.Frame.X; } }
-        private nfloat MaxDraggingX { get { return Width - menuOffset; } }
-        private nfloat MinDraggingX { get { return 0; } }
-        private bool MenuOpen { get { return 0 != CurrentX; } }
+        private nfloat MinDraggingX => 0;
+        private nfloat MaxDraggingX => Width - menuOffset;
+        private nfloat CurrentX => View.Frame.X;
+        private nfloat Width => View.Frame.Width;
+        private bool MenuOpen => 0 != CurrentX;
+		private bool shouldConfirmBeforeNavigating = false;
+
         private IDisposable stateObserver;
 
         public override void ViewDidLoad()
@@ -138,7 +140,7 @@ namespace Toggl.Ross.ViewControllers
                 RxChain.Send(new ServerRequest.GetChanges());
             }
 
-            var logViewcontroller = new LogViewController();
+            var logViewcontroller = new LogViewController(ChangeLoginConfirmation);
             SetViewControllers(new[] { logViewcontroller }, !emptyStack);
 
             // move the logo to the same position of the title view
@@ -172,6 +174,11 @@ namespace Toggl.Ross.ViewControllers
             }
         }
 
+        private void ChangeLoginConfirmation(bool shouldConfirm)
+        {
+            shouldConfirmBeforeNavigating = shouldConfirm;
+        }
+            
         private void OnMenuButtonSelected(LeftViewController.MenuOption option)
         {
             switch (option)
@@ -195,16 +202,24 @@ namespace Toggl.Ross.ViewControllers
                     
                 case LeftViewController.MenuOption.Login:
 
-                    var ok = "MainViewLoginConfirmationOk".Tr();
-                    var title = "MainViewLoginConfirmationTitle".Tr();
-                    var cancel = "MainViewLoginConfirmationCancel".Tr();
-                    var message = "MainViewLoginConfirmationMessage".Tr();
+                    if (!shouldConfirmBeforeNavigating)
+                    {
+                        PushViewController(new LoginViewController(), true);
+                    }
+                    else
+                    {
+                        var ok = "MainViewLoginConfirmationOk".Tr();
+                        var title = "MainViewLoginConfirmationTitle".Tr();
+                        var cancel = "MainViewLoginConfirmationCancel".Tr();
+                        var message = "MainViewLoginConfirmationMessage".Tr();
 
-                    var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
-                    alert.AddAction(UIAlertAction.Create(cancel, UIAlertActionStyle.Default, null));
-					alert.AddAction(UIAlertAction.Create(ok, UIAlertActionStyle.Default, action => PushViewController(new LoginViewController(), true)));
-                    PresentViewController(alert, true, null);
-                    break;
+                        var alert = UIAlertController.Create(title, message, UIAlertControllerStyle.Alert);
+                        alert.AddAction(UIAlertAction.Create(cancel, UIAlertActionStyle.Default, null));
+                        alert.AddAction(UIAlertAction.Create(ok, UIAlertActionStyle.Default, action => PushViewController(new LoginViewController(), true)));
+                        PresentViewController(alert, true, null);
+                    }
+
+                break;
 					
                 case LeftViewController.MenuOption.SignUp:
                     PushViewController(new SignupViewController(), true);
