@@ -886,6 +886,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
+    <AndroidResource Include="Resources\drawable\EditTimeEntryActivityBackground.xml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\anim\" />
