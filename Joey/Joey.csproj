@@ -890,6 +890,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\anim\" />
+    <Folder Include="Services\Google\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Chandler\Chandler.csproj">
