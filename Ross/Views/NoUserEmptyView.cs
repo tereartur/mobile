@@ -15,52 +15,78 @@ namespace Toggl.Ross.Views
 
             var firstLabelText = string.Empty;
             var secondLabelText = string.Empty;
+            UIImage image = null;
+
+            nfloat buttonToBottomMargin = 0;
+            nfloat imageToTitleMargin = 0;
+            nfloat subtitleToButtonMargin = 0;
+           
+            BackgroundColor = UIColor.FromRGB(250f, 251f, 252f);
+
+            var firstLabel = CreateLabel();
+            var secondLabel = CreateLabel();
+
 
             switch (screen)
             {
                 case Screen.Reports:
-                    firstLabelText = "EmptyStatesBoostProductivity";
-                    secondLabelText = "EmptyStatesSignUp";
+                    firstLabel.Apply(Style.ReportsView.NoUserTitle);
+                    secondLabel.Apply(Style.ReportsView.NoUserSubtitle);
+                    image = Image.ReportsImageNoUser;
+                    buttonToBottomMargin = 112;
+                    imageToTitleMargin = 29;
+                    subtitleToButtonMargin = 32;
                     break;
+                    
                 case Screen.Feedback:
-                    firstLabelText = "EmptyStatesNoAccess";
-                    secondLabelText = "EmptyStatesSignUpToGetInTouch";
+                    firstLabel.Apply(Style.Feedback.NoUserTitle);
+                    secondLabel.Apply(Style.Feedback.NoUserSubtitle);
+                    image = Image.FeedbackImageNoUser;
+                    buttonToBottomMargin = 201;
+                    imageToTitleMargin = 16;
+                    subtitleToButtonMargin = 40;
                     break;
             }
 
-            var firstLabel = CreateLabel(firstLabelText);
-            var secondLabel = CreateLabel(secondLabelText);
-            var signUpButton = CreateButton("EmptyStatesSignUpForFree");
-			
-            BackgroundColor = UIColor.FromRGB(.6f, .6f, .6f);
 
+            var signUpButton = CreateButton("EmptyStatesSignUpForFree");
+
+            var imageView = new UIImageView(image);
+
+            InsertSubview(imageView, 0);
             Add(firstLabel);
             Add(secondLabel);
+            secondLabel.Lines = 0;
+            secondLabel.LineBreakMode = UILineBreakMode.WordWrap;
             Add(signUpButton);
 
 			this.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
+
             this.AddConstraints(
-                
+
                 //Bottom button
-                signUpButton.AtBottomOf(this, 40),
+                signUpButton.AtBottomOf(this, buttonToBottomMargin),
                 signUpButton.WithSameCenterX(this),
-                signUpButton.Width().EqualTo(200),
+                signUpButton.Width().EqualTo(300),
+                signUpButton.Height().EqualTo(56),
 
                 //Sign up label
-                secondLabel.Above(signUpButton, 35),
+                secondLabel.Above(signUpButton, subtitleToButtonMargin),
                 secondLabel.WithSameCenterX(this),
 
                 //Boost productivity label
-                firstLabel.Above(secondLabel, 10),
-                firstLabel.WithSameCenterX(this)
+                firstLabel.Above(secondLabel, 8),
+                firstLabel.WithSameCenterX(this),
+
+                // Image
+                imageView.Above(firstLabel, imageToTitleMargin),
+                imageView.WithSameCenterX(this)
             );
         }
 
-        private UILabel CreateLabel(string text)
+        private UILabel CreateLabel()
         {
             var label = new UILabel();
-            label.Text = text.Tr();
-            label.TextColor = UIColor.White;
             return label;
         }
 
@@ -68,10 +94,8 @@ namespace Toggl.Ross.Views
         {
             var button = new UIButton();
             button.TouchUpInside += HandleClick;
-            button.BackgroundColor = Color.LightishGreen;
             button.SetTitle(text.Tr(), UIControlState.Normal);
-            button.TitleEdgeInsets = new UIEdgeInsets(10, 10, 10, 10);
-            button.SetTitleColor(UIColor.White, UIControlState.Normal);
+            button.Apply(Style.EmptyView.SignUpForFreeButton);
             return button;
         }
 

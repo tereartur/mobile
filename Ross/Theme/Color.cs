@@ -42,6 +42,12 @@ namespace Toggl.Ross.Theme
 
         public static readonly UIColor TextInactive = rgb(142, 142, 147, 0.5);
 
+        // Colors for project labels in empty log view
+        public static readonly UIColor Pink = rgb(196, 113, 252);
+        public static readonly UIColor LightGreen = rgb(81, 226, 156);
+        public static readonly UIColor LightOrange = rgb(240, 194, 76);
+        public static readonly UIColor DarkishGray = rgb(163, 163, 163);
+
 
 
         private static UIColor rgb(byte r, byte g, byte b)

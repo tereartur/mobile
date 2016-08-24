@@ -177,7 +177,7 @@ namespace Toggl.Ross.ViewControllers
         public override void ViewDidLayoutSubviews()
         {
             base.ViewDidLayoutSubviews();
-            defaultEmptyView.Frame = new CGRect(0, (View.Frame.Size.Height - 200f) / 2, View.Frame.Size.Width, 200f);
+            defaultEmptyView.Frame = new CGRect(0, 0, View.Frame.Size.Width, View.Frame.Height - timerBar.Frame.Height - UIApplication.SharedApplication.StatusBarFrame.Height);
             noUserEmptyView.Frame = new CGRect(0, 0, View.Frame.Size.Width, View.Frame.Height - timerBar.Frame.Height - UIApplication.SharedApplication.StatusBarFrame.Height);
             reloadView.Bounds = new CGRect(0f, 0f, View.Frame.Size.Width, 70f);
             reloadView.Center = new CGPoint(View.Center.X, reloadView.Center.Y);
@@ -196,7 +196,26 @@ namespace Toggl.Ross.ViewControllers
 
             if (nsIndex == null)
             {
-                floatingHeader.Hidden = true;
+                if (!NoUserHelper.IsLoggedIn)
+                {
+                    floatingHeader.Hidden = true;
+                }
+                else
+                {
+                    var dateHolder = new DateHolder(DateTime.Now);
+
+                    var frame = getFloatingHeaderFrame(dateHolder);
+
+                    if (frame == null)
+                    {
+                        floatingHeader.Hidden = true;
+                        return;
+                    }
+
+                    floatingHeader.Bind(dateHolder);
+                    floatingHeader.Frame = frame.Value;
+                    floatingHeader.Hidden = false;
+                }
             }
             else
             {
@@ -204,7 +223,13 @@ namespace Toggl.Ross.ViewControllers
 
                 var sectionIndex = source.GetSectionCellIndexForIndex(tableView, nsIndex.Row);
 
-                var sectionVM = source.GetSectionViewModelAt(sectionIndex);
+                if (sectionIndex == null)
+                {
+                    floatingHeader.Hidden = true;
+                    return;
+                }
+
+                var sectionVM = source.GetSectionViewModelAt(sectionIndex.Value);
 
                 var frame = getFloatingHeaderFrame(sectionVM);
 
@@ -463,7 +488,7 @@ namespace Toggl.Ross.ViewControllers
                 this.floatingHeader.UpdateDuration();
             }
 
-            public int GetSectionCellIndexForIndex(UITableView tableView, int index)
+            public int? GetSectionCellIndexForIndex(UITableView tableView, int index)
             {
                 var i = index;
                 while (true)
@@ -472,6 +497,12 @@ namespace Toggl.Ross.ViewControllers
                     if (holder is ITimeEntryHolder)
                     {
                         i--;
+                        if (i < 0)
+                        {
+                            // this case happens when the list is messed up somehow
+                            // this happens some time after editing a time entry for a split second
+                            return null;
+                        }
                         continue;
                     }
 

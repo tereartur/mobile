@@ -414,15 +414,7 @@ namespace Toggl.Phoebe.Reactive
 
         static DataSyncMsg<AppState> NoUserDataPut(AppState state, DataMsg msg)
         {
-            var dataStore = ServiceContainer.Resolve<ISyncDataStore>();
-            var draftWorkspace = AppState.GetWorkspaceDraft();
-            var userData = AppState.GetUserDraft(draftWorkspace.Id);
-
-            var updated = dataStore.Update(ctx =>
-            {
-                ctx.Put(draftWorkspace);
-                ctx.Put(userData);
-            });
+            var updated = PrepareDefaultWorkspace();
 
             // This will throw an exception if user hasn't been correctly updated
             var userDataInDb = updated.OfType<UserData>().Single();
@@ -481,10 +473,30 @@ namespace Toggl.Phoebe.Reactive
             ex =>
             {
                 var runningState = state.RequestInfo.Running.Where(x => !(x is ServerRequest.Authenticate)).ToList();
+                IReadOnlyList<ICommonData> updated = PrepareDefaultWorkspace();
+
+                // This will throw an exception if user hasn't been correctly updated
+                var userDataInDb = updated.OfType<UserData>().Single();
+
                 return DataSyncMsg.Create(state.With(
-                                              user: new UserData(),
+                                              user: userDataInDb,
+                                              workspaces: state.Update(state.Workspaces, updated),
+                                              settings: state.Settings.With(userId: userDataInDb.Id),
                                               requestInfo: state.RequestInfo.With(authResult: ex.AuthResult, running: runningState)));
             });
+        }
+
+        private static IReadOnlyList<ICommonData> PrepareDefaultWorkspace()
+        {
+            var dataStore = ServiceContainer.Resolve<ISyncDataStore>();
+            var draftWorkspace = AppState.GetWorkspaceDraft();
+            var userData = AppState.GetUserDraft(draftWorkspace.Id);
+            var updated = dataStore.Update(ctx =>
+             {
+                 ctx.Put(draftWorkspace);
+                 ctx.Put(userData);
+             });
+            return updated;
         }
 
         static void CheckTimeEntryState(ITimeEntryData entryData, TimeEntryState expected, string action)
@@ -629,7 +641,7 @@ namespace Toggl.Phoebe.Reactive
             // TODO: Ping analytics?
             // TODO: Call Log service?
 
-            return DataSyncMsg.Create(appState);
+            return NoUserDataPut(appState, msg);
         }
 
         static DataSyncMsg<AppState> InitStateAfterMigration(AppState state, DataMsg msg)
