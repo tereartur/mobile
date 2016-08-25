@@ -285,7 +285,7 @@ namespace Toggl.Joey.UI.Fragments
 
             public SearchMenuItemExpandListener(IntPtr ptr, JniHandleOwnership transfer) : base(ptr, transfer)
             {
-                
+
             }
 
             public bool OnMenuItemActionCollapse(IMenuItem item)

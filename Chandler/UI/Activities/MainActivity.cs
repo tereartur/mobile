@@ -131,8 +131,9 @@ namespace Toggl.Chandler.UI.Activities
                 }
 
                 await Task.Delay(RebindTime);
-            
-            } while (error != null || Data.Count == 0);
+
+            }
+            while (error != null || Data.Count == 0);
         }
 
         public void RequestStartStop()
@@ -171,12 +172,12 @@ namespace Toggl.Chandler.UI.Activities
             get
             {
                 var nodes = WearableClass
-                       .NodeApi
-                       .GetConnectedNodes(googleApiClient)
-                       .Await()
-                       .JavaCast<INodeApiGetConnectedNodesResult>()
-                       .Nodes;
-                
+                            .NodeApi
+                            .GetConnectedNodes(googleApiClient)
+                            .Await()
+                            .JavaCast<INodeApiGetConnectedNodesResult>()
+                            .Nodes;
+
                 return nodes;
             }
         }

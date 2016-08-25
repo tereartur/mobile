@@ -105,10 +105,6 @@ namespace Toggl.Joey.UI.Fragments
             GoogleLoginText = view.FindViewById<TextView> (Resource.Id.GoogleLoginText).SetFont(Font.Roboto);
             GoogleIntroText = view.FindViewById<TextView> (Resource.Id.GoogleIntroText);
 
-            GoogleLoginButton.Click += OnGoogleLoginButtonClick;
-            GoogleLoginButton.Visibility = hasGoogleAccounts ? ViewStates.Visible : ViewStates.Gone;
-            GoogleIntroText.Visibility = hasGoogleAccounts ? ViewStates.Visible : ViewStates.Gone;
-
             EmailInputLayout.HintEnabled = false;
             EmailInputLayout.ErrorEnabled = true;
             PasswordInputLayout.HintEnabled = false;
@@ -126,6 +122,12 @@ namespace Toggl.Joey.UI.Fragments
             LegalTextView.MovementMethod = Android.Text.Method.LinkMovementMethod.Instance;
             LoginSpinner.Visibility = ViewStates.Invisible;
 
+
+            GoogleLoginButton.Click += OnGoogleLoginButtonClick;
+            GoogleLoginButton.Visibility = hasGoogleAccounts ? ViewStates.Visible : ViewStates.Gone;
+            GoogleIntroText.Visibility = hasGoogleAccounts ? ViewStates.Visible : ViewStates.Gone;
+
+
             if (savedInstanceState != null)
             {
                 showPassword = savedInstanceState.GetBoolean(ExtraShowPassword);
@@ -135,14 +137,14 @@ namespace Toggl.Joey.UI.Fragments
 
             // Google API client
             GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DefaultSignIn)
-                .RequestEmail()
-                .RequestServerAuthCode(Toggl.Phoebe.Build.BackendGoogleClientId)
-                .Build();
+            .RequestEmail()
+            .RequestServerAuthCode(Toggl.Phoebe.Build.BackendGoogleClientId)
+            .Build();
             mGoogleApiClient = new GoogleApiClient.Builder(Activity)
-                .AddConnectionCallbacks(this)
-                .AddOnConnectionFailedListener(this)
-                .AddApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .Build();
+            .AddConnectionCallbacks(this)
+            .AddOnConnectionFailedListener(this)
+            .AddApi(Auth.GOOGLE_SIGN_IN_API, gso)
+            .Build();
 
             ViewModel = new LoginVM();
             if (Arguments.GetBoolean(IS_SIGNUP_MODE))

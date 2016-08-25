@@ -6,6 +6,6 @@ namespace Toggl.Phoebe.Helpers
     public static class NoUserHelper
     {
         public static bool IsLoggedIn
-            => StoreManager.Singleton.AppState.User.RemoteId != null;
+        => StoreManager.Singleton.AppState.User.RemoteId != null;
     }
 }

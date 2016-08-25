@@ -50,7 +50,7 @@ namespace Toggl.Joey.UI.Activities
         private Toolbar MainToolbar { get; set; }
 
         private bool userWithoutApiToken
-            => string.IsNullOrEmpty(StoreManager.Singleton.AppState.User.ApiToken);
+        => string.IsNullOrEmpty(StoreManager.Singleton.AppState.User.ApiToken);
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -115,22 +115,22 @@ namespace Toggl.Joey.UI.Activities
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
-            => DrawerToggle.OnOptionsItemSelected(item) || base.OnOptionsItemSelected(item);
-       
+        => DrawerToggle.OnOptionsItemSelected(item) || base.OnOptionsItemSelected(item);
+
         public void ResetFragmentNavigation(IUserData userData)
         {
             var visibility = NoUserHelper.IsLoggedIn ? ViewStates.Visible : ViewStates.Gone;
-           
+
             DrawerImage.Visibility = visibility;
-			DrawerEmail.Visibility = visibility;
+            DrawerEmail.Visibility = visibility;
             DrawerUserName.Visibility = visibility;
 
-			// TODO : Don't let both name/email empty.
-			// maybe an elegant solution is possible.
-			DrawerUserName.Text = string.IsNullOrEmpty(userData.Name) ? "John Doe" : userData.Name;
-			DrawerEmail.Text = string.IsNullOrEmpty(userData.Email) ? "support@toggl.com" : userData.Email;
-			DrawerImage.ImageUrl = userData.ImageUrl;
-    
+            // TODO : Don't let both name/email empty.
+            // maybe an elegant solution is possible.
+            DrawerUserName.Text = string.IsNullOrEmpty(userData.Name) ? "John Doe" : userData.Name;
+            DrawerEmail.Text = string.IsNullOrEmpty(userData.Email) ? "support@toggl.com" : userData.Email;
+            DrawerImage.ImageUrl = userData.ImageUrl;
+
             if (tryMigrateDatabase(userData))
                 return;
 
@@ -310,7 +310,7 @@ namespace Toggl.Joey.UI.Activities
             var currentlyPresentedFragment = FragmentManager.FindFragmentByTag(MainFragmentTag);
 
             return currentlyPresentedFragment != null &&
-                   currentlyPresentedFragment.GetType() == typeof (LogTimeEntriesListFragment);
+                   currentlyPresentedFragment.GetType() == typeof(LogTimeEntriesListFragment);
         }
     }
 }

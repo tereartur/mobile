@@ -69,12 +69,12 @@ namespace Toggl.Chandler.UI.Fragments
         private SimpleTimeEntryData data => activity.Data[0];
 
         private void OnActionButtonClicked(object sender, EventArgs e)
-            => activity.RequestStartStop();
-       
+        => activity.RequestStartStop();
+
         private void Rebind()
         {
             if (!IsAdded) return;
-           
+
             switch (CurrentState)
             {
                 case TimerState.New:
