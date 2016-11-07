@@ -383,8 +383,20 @@ namespace Toggl.Phoebe.Reactive
 
             var updated = dataStore.Update(ctx =>
             {
+                var existingTags = state.Tags.Values;
                 foreach (var tag in tags)
                 {
+                    var duplicate = existingTags.FirstOrDefault(
+                        t => t.WorkspaceId == tag.WorkspaceId && t.Name == tag.Name);
+                    if (duplicate != null)
+                    {
+                        if (!tag.RemoteId.HasValue)
+                            continue;
+                        
+                        // tag came from server (we hope)
+                        ctx.Delete(duplicate);
+                    }
+
                     ctx.Put(tag);
                 }
             });
