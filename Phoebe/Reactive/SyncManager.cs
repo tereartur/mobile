@@ -249,59 +249,56 @@ namespace Toggl.Phoebe.Reactive
             string json = null;
             List<string> conflicting = new List<string>();
 
-            if (dataStore.TryPeekQueue(QueueId, out json))
+            if (!dataStore.TryPeekQueue(QueueId, out json))
+                return true;
+
+            if (!isConnected)
+                return false;
+
+            try
             {
-                if (isConnected)
+                while (dataStore.TryPeekQueue(QueueId, out json))
                 {
+                    var queueItem = JsonConvert.DeserializeObject<QueueItem> (json);
+
                     try
                     {
-                        do
-                        {
-                            var queueItem = JsonConvert.DeserializeObject<QueueItem> (json);
+                        await SendData(queueItem.Data, remoteObjects, state);
 
-                            try
-                            {
-                                await SendData(queueItem.Data, remoteObjects, state);
-
-                                // If we sent the message successfully, remove it from the queue
-                                dataStore.TryDequeue(QueueId, out json);
-                            }
-                            catch (RemoteIdException ex)
-                            {
-                                logInfo(ex.Message);
-
-                                // Items missing a RemoteId shouldn't lock the queue
-                                // TODO RX: Discard conflicting items if they're too old or too many
-                                conflicting.Add(json);
-                                dataStore.TryDequeue(QueueId, out json);
-                            }
-                            catch
-                            {
-                                throw;
-                            }
-                        }
-                        while (dataStore.TryPeekQueue(QueueId, out json));
-
-                        // Put back in the queue conflicting items (if any)
-                        foreach (var conflict in conflicting)
-                            dataStore.TryEnqueue(QueueId, conflict);
-
-                        return true;
+                        // If we sent the message successfully, remove it from the queue
+                        dataStore.TryDequeue(QueueId, out json);
                     }
-                    catch (Exception ex)
+                    catch (RemoteIdException ex)
                     {
-                        logError(ex);
-                        return false;
+                        logInfo(ex.Message);
+
+                        // Items missing a RemoteId shouldn't lock the queue
+                        // TODO RX: Discard conflicting items if they're too old or too many
+                        conflicting.Add(json);
+                        dataStore.TryDequeue(QueueId, out json);
+                    }
+                    catch (UnsuccessfulRequestException ex)
+                        when(ex.Message.IndexOf("tag already exists", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        logError(ex, "Caught duplicate tag");
+                        dataStore.TryDequeue(QueueId, out json);
+                    }
+                    catch
+                    {
+                        throw;
                     }
                 }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
+
+                // Put back in the queue conflicting items (if any)
+                foreach (var conflict in conflicting)
+                    dataStore.TryEnqueue(QueueId, conflict);
+
                 return true;
+            }
+            catch (Exception ex)
+            {
+                logError(ex);
+                return false;
             }
         }
 
