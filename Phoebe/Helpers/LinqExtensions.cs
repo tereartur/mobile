@@ -151,24 +151,6 @@ namespace Toggl.Phoebe.Helpers
             }
             return -1;
         }
-
-        public static IEnumerable<T> Prepend<T> (this IEnumerable<T> items, T head)
-        {
-            yield return head;
-            foreach (var item in items)
-            {
-                yield return item;
-            }
-        }
-
-        public static IEnumerable<T> Append<T> (this IEnumerable<T> items, T tail)
-        {
-            foreach (var item in items)
-            {
-                yield return item;
-            }
-            yield return tail;
-        }
     }
 }
 
