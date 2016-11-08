@@ -737,7 +737,7 @@ namespace Toggl.Ross.ViewControllers
                 if (hasProject)
                 {
                     projectName = info.ProjectData.Name;
-                    projectColor = UIColor.Clear.FromHex(ProjectData.HexColors[info.ProjectData.Color % ProjectData.HexColors.Length]).CGColor;
+                    projectColor = Color.FromHex(info.ProjectData.HexColor).CGColor;
 
                     if (!string.IsNullOrWhiteSpace(info.ClientData.Name))
                     {

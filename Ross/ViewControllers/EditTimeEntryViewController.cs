@@ -1117,7 +1117,7 @@ namespace Toggl.Ross.ViewControllers
                 set
                 {
                     // If string Hex color is default or null:
-                    if (value == ProjectData.HexColors[ProjectData.DefaultColor] || string.IsNullOrEmpty(value))
+                    if (value == ProjectData.DefaultColor || string.IsNullOrEmpty(value))
                     {
                         projectLabel.Apply(Style.EditTimeEntry.ProjectHintLabel);
                         SetBackgroundImage(Color.White.ToImage(), UIControlState.Normal);
@@ -1126,7 +1126,7 @@ namespace Toggl.Ross.ViewControllers
                     else
                     {
                         projectLabel.Apply(Style.EditTimeEntry.ProjectLabel);
-                        SetBackgroundImage(UIColor.Clear.FromHex(value).ToImage(), UIControlState.Normal);
+                        SetBackgroundImage(Color.FromHex(value).ToImage(), UIControlState.Normal);
                         SetBackgroundImage(null, UIControlState.Highlighted);
                     }
                 }

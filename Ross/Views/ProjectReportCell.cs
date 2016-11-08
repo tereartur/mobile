@@ -33,7 +33,7 @@ namespace Toggl.Ross.Views
                     hex = ProjectData.HexColors [ _data.Color % ProjectData.HexColors.Length];
                     projectTitleLabel.Text = string.IsNullOrEmpty(_data.Project) ? "ReportsCellNoProject".Tr() : _data.Project;
                 }
-                circleView.BackgroundColor = UIColor.Clear.FromHex(hex);
+                circleView.BackgroundColor = Color.FromHex(hex);
                 timeLabel.Text = _data.FormattedTotalTime;
                 projectTitleLabel.SetNeedsDisplay();
             }

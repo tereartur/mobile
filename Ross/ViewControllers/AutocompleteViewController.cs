@@ -109,9 +109,9 @@ namespace Toggl.Ross.ViewControllers
                     var projectData = StoreManager.Singleton.AppState.Projects[data.ProjectId];
                     projectName = projectData.Name;
                     var hex = projectData.Id != Guid.Empty
-                              ? ProjectData.HexColors[projectData.Color % ProjectData.HexColors.Length]
-                              : ProjectData.HexColors[ProjectData.DefaultColor];
-                    projectColor = UIColor.Clear.FromHex(hex);
+                              ? projectData.HexColor
+                              : ProjectData.DefaultColor;
+                    projectColor = Color.FromHex(hex);
 
                     if (projectData.ClientId != Guid.Empty)
                     {

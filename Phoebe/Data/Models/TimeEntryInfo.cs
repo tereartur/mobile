@@ -9,7 +9,7 @@ namespace Toggl.Phoebe.Data.Models
         public IClientData ClientData { get; private set; }
         public ITaskData TaskData { get; private set; }
         public IReadOnlyList<ITagData> Tags { get; private set; }
-        public int Color { get; private set; }
+        public string HexColor { get; private set; }
 
         public TimeEntryInfo(
             IWorkspaceData wsData,
@@ -17,14 +17,14 @@ namespace Toggl.Phoebe.Data.Models
             IClientData clientData,
             ITaskData taskData,
             IReadOnlyList<ITagData> tags,
-            int color)
+            string hexColor)
         {
             WorkspaceData = wsData;
             ProjectData = projectData;
             ClientData = clientData;
             TaskData = taskData;
             Tags = tags;
-            Color = color;
+            HexColor = hexColor;
         }
 
         public TimeEntryInfo With(
@@ -33,7 +33,7 @@ namespace Toggl.Phoebe.Data.Models
             IClientData clientData = null,
             ITaskData taskData = null,
             IReadOnlyList<ITagData> tags = null,
-            int? color = null)
+            string hexColor = null)
         {
             return new TimeEntryInfo(
                        wsData ?? this.WorkspaceData,
@@ -41,7 +41,7 @@ namespace Toggl.Phoebe.Data.Models
                        clientData ?? this.ClientData,
                        taskData ?? this.TaskData,
                        tags ?? this.Tags,
-                       color.HasValue ? color.Value : this.Color);
+                       hexColor ?? this.HexColor);
         }
     }
 }

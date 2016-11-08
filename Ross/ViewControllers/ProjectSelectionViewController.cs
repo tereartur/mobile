@@ -107,7 +107,7 @@ namespace Toggl.Ross.ViewControllers
                 var buttonRect = new CGRect(labelXMargin, labelFrameHeight * i + headerLabelHeight + labelYMargin, labelWidth, labelHeight);
                 var button = new UIButton(buttonRect);
 
-                button.BackgroundColor = UIColor.Clear.FromHex(ProjectData.HexColors[project.Color % ProjectData.HexColors.Length]);
+                button.BackgroundColor = Color.FromHex(project.HexColor);
                 button.TouchUpInside += (s, e) => OnItemSelected(project);
                 button.TitleEdgeInsets = new UIEdgeInsets(10, labelXMargin, 0, labelXMargin);
 
@@ -377,7 +377,7 @@ namespace Toggl.Ross.ViewControllers
                     return;
                 }
 
-                var color = UIColor.Clear.FromHex(ProjectData.HexColors[projectData.Color % ProjectData.HexColors.Length]);
+                var color = Color.FromHex(projectData.HexColor);
                 BackgroundView.BackgroundColor = color;
 
                 projectLabel.Text = projectData.Name;

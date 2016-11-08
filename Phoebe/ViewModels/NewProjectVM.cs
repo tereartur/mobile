@@ -39,13 +39,13 @@ namespace Toggl.Phoebe.ViewModels
             ClientName = clientData.Name;
         }
 
-        public Task<IProjectData> SaveProjectAsync(string projectName, int projectColor, RxChain.Continuation continuationOptions = null)
+        public Task<IProjectData> SaveProjectAsync(string projectName, string projectHexColor, RxChain.Continuation continuationOptions = null)
         {
             var tcs = new TaskCompletionSource<IProjectData> ();
             model = ProjectData.Create(x =>
             {
                 x.Name = projectName;
-                x.Color = projectColor;
+                x.HexColor = projectHexColor;
                 x.WorkspaceId = workspace.Id;
                 x.WorkspaceRemoteId = workspace.RemoteId.HasValue ? workspace.RemoteId.Value : 0;
                 x.IsActive = true;

@@ -153,8 +153,8 @@ namespace Toggl.Phoebe.ViewModels
             get
             {
                 return richData.Info.ProjectData.Id != Guid.Empty
-                       ? ProjectData.HexColors[richData.Info.ProjectData.Color % ProjectData.HexColors.Length]
-                       : ProjectData.HexColors[ProjectData.DefaultColor];
+                       ? richData.Info.ProjectData.HexColor
+                       : ProjectData.DefaultColor;
             }
         }
 

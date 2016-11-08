@@ -76,7 +76,6 @@ namespace Toggl.Phoebe.Data.Models.Old.DB_VERSION_0
     public class ProjectData : CommonData, IUpgradesTo<Models.ProjectData>
     {
         public string Name { get; set; }
-        public int Color { get; set; }
         public bool IsActive { get; set; }
         public bool IsBillable { get; set; }
         public bool IsPrivate { get; set; }
@@ -90,7 +89,6 @@ namespace Toggl.Phoebe.Data.Models.Old.DB_VERSION_0
             var data = new Models.ProjectData();
             Upgrade(data);
             data.Name = Name;
-            data.Color = Color;
             data.IsActive = IsActive;
             data.IsBillable = IsBillable;
             data.IsPrivate = IsPrivate;
