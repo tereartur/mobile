@@ -386,16 +386,8 @@ namespace Toggl.Phoebe.Reactive
                 var existingTags = state.Tags.Values;
                 foreach (var tag in tags)
                 {
-                    var duplicate = existingTags.FirstOrDefault(
-                        t => t.WorkspaceId == tag.WorkspaceId && t.Name == tag.Name);
-                    if (duplicate != null)
-                    {
-                        if (!tag.RemoteId.HasValue)
-                            continue;
-                        
-                        // tag came from server (we hope)
-                        ctx.Delete(duplicate);
-                    }
+                    if (existingTags.Any(t => t.WorkspaceId == tag.WorkspaceId && t.Name == tag.Name))
+                        continue;
 
                     ctx.Put(tag);
                 }
@@ -819,6 +811,15 @@ namespace Toggl.Phoebe.Reactive
                     }
                     else
                     {
+                        if (newData is ITagData)
+                        {
+                            var asTag = (ITagData)newData;
+                            var oldTag = ctx.GetByColumn(newData.GetType(), nameof(ITagData.Name), asTag.Name);
+                            if (oldTag != null)
+                            {
+                                ctx.Delete(oldTag);
+                            }
+                        }
                         newData.Id = Guid.NewGuid();  // Assign new Id
                         newData = BuildLocalRelationships(state, newData);  // Set local Id values.
                         PutOrDelete(ctx, newData);
