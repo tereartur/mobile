@@ -811,17 +811,20 @@ namespace Toggl.Phoebe.Reactive
                     }
                     else
                     {
+                        newData.Id = Guid.NewGuid();  // Assign new Id
+                        newData = BuildLocalRelationships(state, newData);  // Set local Id values.
                         if (newData is ITagData)
                         {
                             var asTag = (ITagData)newData;
-                            var oldTag = ctx.GetByColumn(newData.GetType(), nameof(ITagData.Name), asTag.Name);
+                            var oldTag = ctx.Connection.Table<TagData>()
+                                            .FirstOrDefault(t => t.WorkspaceRemoteId == asTag.WorkspaceRemoteId
+                                                            && t.Name == asTag.Name);
+                                            
                             if (oldTag != null)
                             {
-                                ctx.Delete(oldTag);
+                                ctx.Delete(oldTag.With(t => t.DeletedAt = DateTime.UtcNow));
                             }
                         }
-                        newData.Id = Guid.NewGuid();  // Assign new Id
-                        newData = BuildLocalRelationships(state, newData);  // Set local Id values.
                         PutOrDelete(ctx, newData);
                     }
 
