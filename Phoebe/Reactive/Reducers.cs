@@ -383,8 +383,12 @@ namespace Toggl.Phoebe.Reactive
 
             var updated = dataStore.Update(ctx =>
             {
+                var existingTags = state.Tags.Values;
                 foreach (var tag in tags)
                 {
+                    if (existingTags.Any(t => t.WorkspaceId == tag.WorkspaceId && t.Name == tag.Name))
+                        continue;
+
                     ctx.Put(tag);
                 }
             });
@@ -809,6 +813,18 @@ namespace Toggl.Phoebe.Reactive
                     {
                         newData.Id = Guid.NewGuid();  // Assign new Id
                         newData = BuildLocalRelationships(state, newData);  // Set local Id values.
+                        if (newData is ITagData)
+                        {
+                            var asTag = (ITagData)newData;
+                            var oldTag = ctx.Connection.Table<TagData>()
+                                            .FirstOrDefault(t => t.WorkspaceRemoteId == asTag.WorkspaceRemoteId
+                                                            && t.Name == asTag.Name);
+                                            
+                            if (oldTag != null)
+                            {
+                                ctx.Delete(oldTag.With(t => t.DeletedAt = DateTime.UtcNow));
+                            }
+                        }
                         PutOrDelete(ctx, newData);
                     }
 
