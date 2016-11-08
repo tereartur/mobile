@@ -43,6 +43,7 @@ namespace Toggl.Phoebe.Data
                 platformInfo, new SQLiteConnectionString(Path.ChangeExtension(dbPath, DatabaseHelper.QueueExtension), true));
 
             CleanOldDraftEntry();
+            DeleteDuplicateTags();
         }
 
         public void Dispose()
@@ -89,6 +90,25 @@ namespace Toggl.Phoebe.Data
             // TODO: temporal method to clear old draft entries from DB.
             // It should be removed in next versions.
             cnn.Table<TimeEntryData>().Delete(t => t.State == TimeEntryState.New);
+        }
+
+        private void DeleteDuplicateTags()
+        {
+            // TODO: delete this at some point in the future
+
+            var seen = new HashSet<Tuple<Guid, string>>();
+            var toDelete = new HashSet<Guid>();
+            var allTags = cnn.Table<TagData>().ToList();
+            foreach (var tag in allTags.OrderByDescending(t => t.RemoteId != null))
+            {
+                if (!seen.Add(Tuple.Create(tag.WorkspaceId, tag.Name)))
+                {
+                    toDelete.Add(tag.Id);
+                }
+            }
+            if (toDelete.Count == 0)
+                return;
+            cnn.Table<TagData>().Delete(t => toDelete.Contains(t.Id));
         }
 
         internal static List<Type> GetDataModels()
