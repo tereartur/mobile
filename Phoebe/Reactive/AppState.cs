@@ -151,7 +151,7 @@ namespace Toggl.Phoebe.Reactive
             var projectData = teData.ProjectId != Guid.Empty ? Projects[teData.ProjectId] : new ProjectData();
             var clientData = projectData.ClientId != Guid.Empty ? Clients[projectData.ClientId] : new ClientData();
             var taskData = teData.TaskId != Guid.Empty ? Tasks[teData.TaskId] : new TaskData();
-            var color = (projectData.Id != Guid.Empty) ? projectData.HexColor : ProjectData.DefaultColor;
+            var color = (projectData.Id != Guid.Empty) ? projectData.GetProperColor() : ProjectData.DefaultColor;
             var tagsData =
                 teData.Tags.Select(x => Tags.Values.SingleOrDefault(y => y.Name == x && y.WorkspaceId == teData.WorkspaceId))
                 // TODO: Throw exception if tag was not found?

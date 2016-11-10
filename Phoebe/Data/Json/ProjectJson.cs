@@ -10,6 +10,9 @@ namespace Toggl.Phoebe.Data.Json
         [JsonProperty(PropertyName = "name", DefaultValueHandling = DefaultValueHandling.Populate)]
         public string Name { get; set; }
 
+        [JsonProperty("color")]
+        public string Color { get; set; }
+
         [JsonProperty("active")]
         public bool IsActive { get; set; }
 

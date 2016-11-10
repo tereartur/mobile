@@ -6,6 +6,7 @@ namespace Toggl.Phoebe.Data.Models
     public interface IProjectData : ICommonData
     {
         string Name { get; }
+        int Color { get; }
         bool IsActive { get; }
         bool IsBillable { get; }
         bool IsPrivate { get; }
@@ -51,6 +52,7 @@ namespace Toggl.Phoebe.Data.Models
         protected ProjectData(ProjectData other) : base(other)
         {
             Name = other.Name;
+            Color = other.Color;
             HexColor = other.HexColor;
             IsActive = other.IsActive;
             IsBillable = other.IsBillable;
@@ -74,6 +76,8 @@ namespace Toggl.Phoebe.Data.Models
         }
 
         public string Name { get; set; }
+
+        public int Color { get; set; }
 
         public bool IsActive { get; set; }
 

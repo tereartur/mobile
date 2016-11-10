@@ -3,6 +3,7 @@ using Cirrious.FluentLayouts.Touch;
 using Foundation;
 using GalaSoft.MvvmLight.Helpers;
 using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe.Helpers;
 using Toggl.Phoebe.Reactive;
 using Toggl.Phoebe.ViewModels;
 using Toggl.Ross.Theme;
@@ -109,7 +110,7 @@ namespace Toggl.Ross.ViewControllers
                     var projectData = StoreManager.Singleton.AppState.Projects[data.ProjectId];
                     projectName = projectData.Name;
                     var hex = projectData.Id != Guid.Empty
-                              ? projectData.HexColor
+                              ? projectData.GetProperColor()
                               : ProjectData.DefaultColor;
                     projectColor = Color.FromHex(hex);
 

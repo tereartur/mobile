@@ -8,6 +8,7 @@ using CoreGraphics;
 using Foundation;
 using GalaSoft.MvvmLight.Helpers;
 using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe.Helpers;
 using Toggl.Phoebe.Reactive;
 using Toggl.Phoebe.ViewModels;
 using Toggl.Ross.DataSources;
@@ -110,7 +111,7 @@ namespace Toggl.Ross.ViewControllers
                 var buttonConstraints = new List<FluentLayout>();
 
                 var hasTask = project.Task != null;
-                var color = Color.FromHex(project.HexColor);
+                var color = Color.FromHex(project.GetProperColor());
                 var hasClient = !string.IsNullOrEmpty(project.ClientName);
 
                 //Button
@@ -341,7 +342,7 @@ namespace Toggl.Ross.ViewControllers
                     return;
                 }
 
-                var color = Color.FromHex(projectData.HexColor);
+                var color = Color.FromHex(projectData.GetProperColor());
 
                 circleView.Hidden = false;
                 circleView.Color = color.CGColor;
