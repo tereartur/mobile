@@ -48,19 +48,19 @@ namespace Toggl.Ross.Theme
             public static void ProjectLabel(UILabel v)
             {
                 v.Font = UIFont.FromName("HelveticaNeue-Medium", 17f);
-                v.TextColor = Color.White;
+                v.TextColor = Color.Black;
             }
 
             public static void ClientLabel(UILabel v)
             {
                 v.Font = UIFont.FromName("HelveticaNeue", 13f);
-                v.TextColor = Color.White.ColorWithAlpha(0.75f);
+                v.TextColor = Color.Black.ColorWithAlpha(0.75f);
             }
 
             public static void TaskLabel(UILabel v)
             {
                 v.Font = UIFont.FromName("HelveticaNeue", 13f);
-                v.TextColor = Color.White.ColorWithAlpha(0.75f);
+                v.TextColor = Color.Black.ColorWithAlpha(0.75f);
             }
 
             public static void DescriptionField(TextField v)

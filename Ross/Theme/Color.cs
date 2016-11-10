@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using UIKit;
 
 namespace Toggl.Ross.Theme
@@ -42,15 +44,45 @@ namespace Toggl.Ross.Theme
 
         public static readonly UIColor TextInactive = rgb(142, 142, 147, 0.5);
 
-
-
         private static UIColor rgb(byte r, byte g, byte b)
         {
             return UIColor.FromRGB(r, g, b);
         }
+
         private static UIColor rgb(byte r, byte g, byte b, double a)
         {
             return UIColor.FromRGBA(r, g, b, (int)(255 * a));
+        }
+
+        public static UIColor FromHex(string hexValue, float alpha = 1f)
+        {
+            hexValue = hexValue.TrimStart('#');
+
+            int rgb;
+            if (!int.TryParse(hexValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out rgb))
+            {
+                throw new ArgumentException("Invalid hex string.", "hexValue");
+            }
+
+            switch (hexValue.Length)
+            {
+                case 6:
+                    return new UIColor(
+                               ((rgb & 0xFF0000) >> 16) / 255.0f,
+                               ((rgb & 0x00FF00) >> 8) / 255.0f,
+                               (rgb & 0x0000FF) / 255.0f,
+                               alpha
+                           );
+                case 3:
+                    return new UIColor(
+                               (((rgb & 0xF00) >> 4) | ((rgb & 0xF00) >> 8)) / 255.0f,
+                               ((rgb & 0x0F0) | (rgb & 0x0F0) >> 4) / 255.0f,
+                               ((rgb & 0x00F << 4) | (rgb & 0x00F)) / 255.0f,
+                               alpha
+                           );
+                default:
+                    throw new ArgumentException("Invalid hex string.", "hexValue");
+            }
         }
     }
 }

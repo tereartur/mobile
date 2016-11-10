@@ -10,6 +10,7 @@ using Foundation;
 using GalaSoft.MvvmLight.Helpers;
 using Toggl.Phoebe;
 using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe.Helpers;
 using Toggl.Phoebe.Reactive;
 using Toggl.Phoebe.ViewModels;
 using Toggl.Phoebe.ViewModels.Timer;
@@ -737,7 +738,7 @@ namespace Toggl.Ross.ViewControllers
                 if (hasProject)
                 {
                     projectName = info.ProjectData.Name;
-                    projectColor = UIColor.Clear.FromHex(ProjectData.HexColors[info.ProjectData.Color % ProjectData.HexColors.Length]).CGColor;
+                    projectColor = Color.FromHex(info.ProjectData.GetProperColor()).CGColor;
 
                     if (!string.IsNullOrWhiteSpace(info.ClientData.Name))
                     {

@@ -388,7 +388,7 @@ namespace Toggl.Ross.Views.Charting
             {
                 hex = ProjectData.HexColors [DonutProjectList [(int)index].Color % ProjectData.HexColors.Length];
             }
-            return UIColor.Clear.FromHex(hex);
+            return Color.FromHex(hex);
         }
 
         public string TextForSliceAtIndex(XYDonutChart pieChart, nint index)

@@ -12,6 +12,7 @@ using XPlatUtils;
 using Toggl.Phoebe.Data.Models;
 using UIKit;
 using Toggl.Ross.ViewControllers;
+using Toggl.Phoebe.Helpers;
 
 namespace Toggl.Ross.Widget
 {
@@ -76,7 +77,7 @@ namespace Toggl.Ross.Widget
                     Id = entry.Data.Id.ToString(),
                     ProjectName = entry.Info.ProjectData.Name,
                     Description = entry.Data.Description,
-                    Color = ProjectData.HexColors [ entry.Info.ProjectData.Color % ProjectData.HexColors.Length],
+                    Color = entry.Info.ProjectData.GetProperColor(),
                     IsRunning = entry.Data.State == TimeEntryState.Running,
                     ClientName = entry.Info.ClientData.Name,
                     StartTime = entry.Data.StartTime,

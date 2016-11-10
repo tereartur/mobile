@@ -1,15 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Cirrious.FluentLayouts.Touch;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using GalaSoft.MvvmLight.Helpers;
 using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe.Helpers;
 using Toggl.Phoebe.Reactive;
 using Toggl.Phoebe.ViewModels;
 using Toggl.Ross.DataSources;
 using Toggl.Ross.Theme;
+using Toggl.Ross.Views;
 using UIKit;
 
 namespace Toggl.Ross.ViewControllers
@@ -17,6 +21,9 @@ namespace Toggl.Ross.ViewControllers
     public class ProjectSelectionViewController : UITableViewController
     {
         private const string TopProjectsKey = "ProjectTopProjects";
+
+        private readonly static nfloat CellHeight = 64f;
+        private readonly static nfloat HeaderCellHeight = 56f;
 
         private readonly static NSString ClientHeaderId = new NSString("ClientHeaderId");
         private readonly static NSString ProjectCellId = new NSString("ProjectCellId");
@@ -41,11 +48,11 @@ namespace Toggl.Ross.ViewControllers
             View.Apply(Style.Screen);
             EdgesForExtendedLayout = UIRectEdge.None;
 
-            TableView.RowHeight = 60f;
+            TableView.RowHeight = 64f;
             TableView.RegisterClassForHeaderFooterViewReuse(typeof(SectionHeaderView), ClientHeaderId);
             TableView.RegisterClassForCellReuse(typeof(ProjectCell), ProjectCellId);
             TableView.RegisterClassForCellReuse(typeof(TaskCell), TaskCellId);
-            TableView.SeparatorStyle = UITableViewCellSeparatorStyle.None;
+            TableView.SeparatorStyle = UITableViewCellSeparatorStyle.SingleLine;
 
             var defaultFooterView = new UIActivityIndicatorView(UIActivityIndicatorViewStyle.Gray);
             defaultFooterView.Frame = new CGRect(0, 0, 50, 50);
@@ -83,49 +90,95 @@ namespace Toggl.Ross.ViewControllers
                 return;
             }
 
-            const int labelXMargin = 20;
-            const int labelYMargin = 5;
-            const int labelFrameHeight = 85;
+            var constraints = new List<FluentLayout>();
+            var headerHeight = HeaderCellHeight + ((CellHeight + 1) * numberOfProjects);
 
-            const int labelHeight = labelFrameHeight - labelYMargin;
-            var labelWidth = View.Frame.Width - labelXMargin * 2;
+            var tableHeader = new UIView(new CGRect(0, 0, View.Frame.Width, headerHeight));
 
-            var headerRect = new CGRect(0, 0, labelWidth, labelFrameHeight * (numberOfProjects + 1));
-            var headerView = new UIView(headerRect);
+            var headerLabel = new UILabel() { Text = TopProjectsKey.Tr() };
+            headerLabel.Apply(Style.Log.HeaderDateLabel);
+            tableHeader.Add(headerLabel);
 
-            const int headerLabelHeight = 50;
+            constraints.Add(headerLabel.WithSameTop(tableHeader));
+            constraints.Add(headerLabel.AtLeftOf(tableHeader, 16));
+            constraints.Add(headerLabel.Height().EqualTo(HeaderCellHeight));
+            constraints.Add(headerLabel.Width().EqualTo(View.Frame.Width));
 
-            var headerLabelRect = new CGRect(labelXMargin, labelYMargin, labelWidth, headerLabelHeight);
-            var headerLabel = new UILabel(headerLabelRect) { Text = TopProjectsKey.Tr() };
-
-            headerView.AddSubview(headerLabel);
-
-            for (int i = 0; i < numberOfProjects; i++)
+            UIView previousView = headerLabel;
+           
+            foreach (var project in topProjects)
             {
-                var project = topProjects[i];
+                var buttonConstraints = new List<FluentLayout>();
 
-                var buttonRect = new CGRect(labelXMargin, labelFrameHeight * i + headerLabelHeight + labelYMargin, labelWidth, labelHeight);
-                var button = new UIButton(buttonRect);
+                var hasTask = project.Task != null;
+                var color = Color.FromHex(project.GetProperColor());
+                var hasClient = !string.IsNullOrEmpty(project.ClientName);
 
-                button.BackgroundColor = UIColor.Clear.FromHex(ProjectData.HexColors[project.Color % ProjectData.HexColors.Length]);
+                //Button
+                var button = new UIButton();
+                button.BackgroundColor = Color.White;
                 button.TouchUpInside += (s, e) => OnItemSelected(project);
-                button.TitleEdgeInsets = new UIEdgeInsets(10, labelXMargin, 0, labelXMargin);
+                tableHeader.Add(button);
 
-                var projectLabelText = project.Task != null ? $"{project.Name} - {project.Task.Name}" : project.Name;
-                var projectLabel = new UILabel(new CGRect(labelXMargin, 15, labelWidth, 20));
-                projectLabel.Text = projectLabelText;
-                projectLabel.TextColor = UIColor.White;
-                button.AddSubview(projectLabel);
+                constraints.Add(button.Below(previousView, 1));
+                constraints.Add(button.Height().EqualTo(CellHeight));
+                constraints.Add(button.Width().EqualTo(View.Frame.Width));
 
-                var clientLabel = new UILabel(new CGRect(labelXMargin, 45, labelWidth, 20));
-                clientLabel.Text = string.IsNullOrEmpty(project.ClientName) ? "ProjectNoClient".Tr() : project.ClientName;
-                clientLabel.TextColor = UIColor.White;
-                button.AddSubview(clientLabel);
+                //Circle
+                var circle = new CircleView();
+                circle.Color = color.CGColor;
+                button.Add(circle);
 
-                headerView.AddSubview(button);
+                buttonConstraints.Add(circle.AtLeftOf(button, 16));
+                buttonConstraints.Add(circle.Width().EqualTo(12));
+                buttonConstraints.Add(circle.Height().EqualTo(12));
+
+                //Project & client label
+                var projectLabel = new UILabel();
+                var projectLabelText = hasClient ? $"{project.Name} - {project.ClientName}" : project.Name;
+
+                var attributedText = new NSMutableAttributedString(projectLabelText);
+                attributedText.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, project.Name.Length));
+                if (hasClient)
+                {
+                    attributedText.AddAttribute(UIStringAttributeKey.ForegroundColor, Color.Black, new NSRange(project.Name.Length, 3 + project.ClientName.Length));
+                }
+
+                projectLabel.AttributedText = attributedText;
+                button.Add(projectLabel);
+
+                buttonConstraints.Add(projectLabel.ToRightOf(circle, 8));
+                buttonConstraints.Add(projectLabel.Width().EqualTo(View.Frame.Width - 40));
+
+                if (hasTask)
+                {
+                    var taskLabel = new UILabel();
+                    taskLabel.Text = project.Task.Name;
+                    taskLabel.TextColor = Color.Black;
+                    button.Add(taskLabel);
+
+                    buttonConstraints.Add(taskLabel.AtLeftOf(button, 36));
+                    buttonConstraints.Add(taskLabel.Below(projectLabel, 2));
+
+                    buttonConstraints.Add(circle.AtTopOf(button, 16));
+                    buttonConstraints.Add(projectLabel.AtTopOf(button, 11));
+                }
+                else
+                {
+                    buttonConstraints.Add(circle.WithSameCenterY(button));
+                    buttonConstraints.Add(projectLabel.WithSameCenterY(button));
+                }
+
+                button.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
+                button.AddConstraints(buttonConstraints);
+
+                previousView = button;
             }
 
-            TableView.TableHeaderView = headerView;
+            tableHeader.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
+            tableHeader.AddConstraints(constraints);
+
+            TableView.TableHeaderView = tableHeader;
         }
 
         protected void OnItemSelected(ICommonData m)
@@ -232,25 +285,13 @@ namespace Toggl.Ross.ViewControllers
                 return EstimatedHeightForHeader(tableView, section);
             }
 
-            public override nfloat EstimatedHeight(UITableView tableView, NSIndexPath indexPath)
-            {
-                return 60f;
-            }
+            public override nfloat EstimatedHeight(UITableView tableView, NSIndexPath indexPath) => CellHeight;
 
-            public override nfloat EstimatedHeightForHeader(UITableView tableView, nint section)
-            {
-                return 42f;
-            }
+            public override nfloat EstimatedHeightForHeader(UITableView tableView, nint section) => HeaderCellHeight;
 
-            public override bool CanEditRow(UITableView tableView, NSIndexPath indexPath)
-            {
-                return false;
-            }
+            public override bool CanEditRow(UITableView tableView, NSIndexPath indexPath) => false;
 
-            public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
-            {
-                return 60f;
-            }
+            public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath) => CellHeight;
 
             public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
             {
@@ -262,229 +303,139 @@ namespace Toggl.Ross.ViewControllers
             }
         }
 
-        class ProjectCell : UITableViewCell
+        private class ProjectCell : UITableViewCell
         {
-            private UIView textContentView;
+            private CircleView circleView;
             private UILabel projectLabel;
-            private UILabel clientLabel;
             private UIButton tasksButton;
+
             private ProjectsCollection.SuperProjectData projectData;
             private Action<ProjectData> onPressedTagBtn;
 
             public ProjectCell(IntPtr handle) : base(handle)
             {
                 this.Apply(Style.Screen);
-                BackgroundView = new UIView();
 
-                ContentView.Add(textContentView = new UIView());
-                ContentView.Add(tasksButton = new UIButton().Apply(Style.ProjectList.TasksButtons));
-                textContentView.Add(projectLabel = new UILabel().Apply(Style.ProjectList.ProjectLabel));
-                textContentView.Add(clientLabel = new UILabel().Apply(Style.ProjectList.ClientLabel));
+                BackgroundColor = Color.White;
 
-                var maskLayer = new CAGradientLayer
-                {
-                    AnchorPoint = CGPoint.Empty,
-                    StartPoint = new CGPoint(0.0f, 0.0f),
-                    EndPoint = new CGPoint(1.0f, 0.0f),
-                    Colors = new[]
-                    {
-                        UIColor.FromWhiteAlpha(1, 1).CGColor,
-                        UIColor.FromWhiteAlpha(1, 1).CGColor,
-                        UIColor.FromWhiteAlpha(1, 0).CGColor,
-                    },
-                    Locations = new[]
-                    {
-                        NSNumber.FromFloat(0f),
-                        NSNumber.FromFloat(0.9f),
-                        NSNumber.FromFloat(1f),
-                    },
-                };
+                Add(circleView = new CircleView());
+                Add(tasksButton = new UIButton().Apply(Style.ProjectList.TasksButtons));
+                Add(projectLabel = new UILabel().Apply(Style.ProjectList.ProjectLabel));
 
-                textContentView.Layer.Mask = maskLayer;
                 tasksButton.TouchUpInside += OnTasksButtonTouchUpInside;
+
+                this.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
+                this.AddConstraints(GenerateConstraints());
             }
 
-            public override void LayoutSubviews()
-            {
-                base.LayoutSubviews();
-
-                var contentFrame = new CGRect(0, CellSpacing / 2, Frame.Width, Frame.Height - CellSpacing);
-                SelectedBackgroundView.Frame = BackgroundView.Frame = ContentView.Frame = contentFrame;
-
-                if (!tasksButton.Hidden)
-                {
-                    var virtualWidth = contentFrame.Height;
-                    var buttonWidth = tasksButton.CurrentBackgroundImage.Size.Width;
-                    var extraPadding = (virtualWidth - buttonWidth) / 2f;
-                    tasksButton.Frame = new CGRect(
-                        contentFrame.Width - virtualWidth + extraPadding, extraPadding,
-                        buttonWidth, buttonWidth);
-                    contentFrame.Width -= virtualWidth;
-                }
-
-                contentFrame.X += 13f;
-                contentFrame.Width -= 13f;
-                textContentView.Frame = contentFrame;
-                textContentView.Layer.Mask.Bounds = contentFrame;
-
-                contentFrame = new CGRect(CGPoint.Empty, contentFrame.Size);
-
-                if (clientLabel.Hidden)
-                {
-                    // Only display single item, so make it fill the whole text frame
-                    var bounds = GetBoundingRect(projectLabel);
-                    projectLabel.Frame = new CGRect(
-                        x: 0,
-                        y: (contentFrame.Height - bounds.Height + projectLabel.Font.Descender) / 2f,
-                        width: contentFrame.Width,
-                        height: bounds.Height
-                    );
-                }
-                else
-                {
-                    // Carefully craft the layout
-                    var bounds = GetBoundingRect(projectLabel);
-                    projectLabel.Frame = new CGRect(
-                        x: 0,
-                        y: (contentFrame.Height - bounds.Height + projectLabel.Font.Descender) / 2f,
-                        width: bounds.Width,
-                        height: bounds.Height
-                    );
-
-                    const float clientLeftMargin = 7.5f;
-                    bounds = GetBoundingRect(clientLabel);
-                    clientLabel.Frame = new CGRect(
-                        x: projectLabel.Frame.X + projectLabel.Frame.Width + clientLeftMargin,
-                        y: (float)Math.Floor(projectLabel.Frame.Y + projectLabel.Font.Ascender - clientLabel.Font.Ascender),
-                        width: bounds.Width,
-                        height: bounds.Height
-                    );
-                }
-            }
-
-            public void Bind(ProjectsCollection.SuperProjectData projectData, Action<ProjectData> onPressedTagBtn, bool showClient = false)
+            public void Bind(ProjectsCollection.SuperProjectData projectData, Action<ProjectData> onPressedTagBtn)
             {
                 this.projectData = projectData;
                 this.onPressedTagBtn = onPressedTagBtn;
 
                 if (projectData.IsEmpty)
                 {
-                    projectLabel.Text = "ProjectNoProject".Tr();
-                    clientLabel.Hidden = true;
+                    circleView.Hidden = true;
                     tasksButton.Hidden = true;
-                    BackgroundView.BackgroundColor = Color.Gray;
+                    projectLabel.Text = "ProjectNoProject".Tr();
                     projectLabel.Apply(Style.ProjectList.NoProjectLabel);
                     return;
                 }
 
-                var color = UIColor.Clear.FromHex(ProjectData.HexColors[projectData.Color % ProjectData.HexColors.Length]);
-                BackgroundView.BackgroundColor = color;
+                var color = Color.FromHex(projectData.GetProperColor());
 
+                circleView.Hidden = false;
+                circleView.Color = color.CGColor;
+
+                projectLabel.TextColor = color;
                 projectLabel.Text = projectData.Name;
-                clientLabel.Text = projectData.ClientName;
-                clientLabel.Hidden = !showClient;
-                tasksButton.Hidden = projectData.TaskNumber == 0;
-                tasksButton.Selected = false;
-                tasksButton.SetTitleColor(color, UIControlState.Normal);
-                tasksButton.SetTitle(projectData.TaskNumber.ToString(), UIControlState.Normal);
 
-                // Layout content.
-                LayoutSubviews();
+                tasksButton.Selected = false;
+                tasksButton.Hidden = projectData.TaskNumber == 0;
+                tasksButton.SetTitleColor(Color.Steel, UIControlState.Normal);
+                tasksButton.SetTitle(projectData.TaskNumber.ToString(), UIControlState.Normal);
+            }
+
+            private IEnumerable<FluentLayout> GenerateConstraints()
+            {
+                //Circle
+                yield return circleView.AtLeftOf(this, 16);
+                yield return circleView.Width().EqualTo(12);
+                yield return circleView.Height().EqualTo(12);
+                yield return circleView.WithSameCenterY(this);
+
+                //Tasks buttons
+                if (!tasksButton.Hidden)
+                {
+                    yield return tasksButton.AtRightOf(this, 16);
+                    yield return tasksButton.WithSameCenterY(this);
+                }
+
+                //Project
+                yield return projectLabel.WithSameCenterY(this);
+                yield return projectLabel.ToRightOf(circleView, 8);
+                yield return projectLabel.Width().EqualTo(this.Frame.Width - 76);
             }
 
             private void OnTasksButtonTouchUpInside(object sender, EventArgs e)
             {
-                if (onPressedTagBtn != null && projectData != null)
-                {
-                    onPressedTagBtn.Invoke(projectData);
-                }
-            }
-
-            private static CGRect GetBoundingRect(UILabel view)
-            {
-                var attrs = new UIStringAttributes()
-                {
-                    Font = view.Font,
-                };
-                var rect = ((NSString)(view.Text ?? string.Empty)).GetBoundingRect(
-                               new CGSize(float.MaxValue, float.MaxValue),
-                               NSStringDrawingOptions.UsesLineFragmentOrigin,
-                               attrs, null);
-                rect.Height = (float)Math.Ceiling(rect.Height);
-                return rect;
+                if (onPressedTagBtn == null || projectData == null) return;
+                onPressedTagBtn?.Invoke(projectData);
             }
         }
 
-        class TaskCell : UITableViewCell
+        private class TaskCell : UITableViewCell
         {
-            private readonly UILabel nameLabel;
-            private readonly UIView separatorView;
+            private readonly UILabel taskNameLabel;
 
             public TaskCell(IntPtr handle) : base(handle)
             {
-                this.Apply(Style.Screen);
-                ContentView.Add(nameLabel = new UILabel().Apply(Style.ProjectList.TaskLabel));
-                ContentView.Add(separatorView = new UIView().Apply(Style.ProjectList.TaskSeparator));
-                BackgroundView = new UIView().Apply(Style.ProjectList.TaskBackground);
+                Add(taskNameLabel = new UILabel().Apply(Style.ProjectList.TaskLabel));
+                BackgroundColor = Color.FromHex("#ECEDED");
+
+                taskNameLabel.TextColor = Color.Black;
+
+                this.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
+                this.AddConstraints(GenerateConstraints());
             }
 
-            public override void LayoutSubviews()
+            public void Bind(TaskData taskData)
             {
-                base.LayoutSubviews();
-
-                var contentFrame = new CGRect(0, 0, Frame.Width, Frame.Height);
-                SelectedBackgroundView.Frame = BackgroundView.Frame = ContentView.Frame = contentFrame;
-
-                // Add padding
-                contentFrame.X = 15f;
-                contentFrame.Y = 0;
-                contentFrame.Width -= 15f;
-
-                nameLabel.Frame = contentFrame;
-                separatorView.Frame = new CGRect(
-                    contentFrame.X, contentFrame.Y + contentFrame.Height - 1f,
-                    contentFrame.Width, 1f);
+                var taskName = string.IsNullOrWhiteSpace(taskData.Name) ? "ProjectNoNameTask".Tr() : taskData.Name;
+                taskNameLabel.Text = taskName;
             }
 
-            public void Bind(TaskData data)
+            private IEnumerable<FluentLayout> GenerateConstraints()
             {
-                var taskName = data.Name;
-                if (string.IsNullOrWhiteSpace(taskName))
-                {
-                    taskName = "ProjectNoNameTask".Tr();
-                }
-                nameLabel.Text = taskName;
+                yield return taskNameLabel.AtLeftOf(this, 36);
+                yield return taskNameLabel.WithSameCenterY(this);
             }
         }
 
-        class SectionHeaderView : UITableViewHeaderFooterView
+        private class SectionHeaderView : UITableViewHeaderFooterView
         {
-            private const float HorizSpacing = 15f;
-            private readonly UILabel nameLabel;
+            private readonly UILabel clientNameLabel;
 
             public SectionHeaderView(IntPtr ptr) : base(ptr)
             {
-                nameLabel = new UILabel().Apply(Style.Log.HeaderDateLabel);
-                ContentView.AddSubview(nameLabel);
-                BackgroundView = new UIView().Apply(Style.Log.HeaderBackgroundView);
+                BackgroundColor = Color.FromHex("#ECEDED");
+
+                Add(clientNameLabel = new UILabel().Apply(Style.Log.HeaderDateLabel));
+
+                this.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
+                this.AddConstraints(GenerateConstraints());
             }
 
-            public override void LayoutSubviews()
+            private IEnumerable<FluentLayout> GenerateConstraints()
             {
-                base.LayoutSubviews();
-                var contentFrame = ContentView.Frame;
-
-                nameLabel.Frame = new CGRect(
-                    x: HorizSpacing,
-                    y: 0,
-                    width: (contentFrame.Width - 3 * HorizSpacing) / 2,
-                    height: contentFrame.Height
-                );
+                yield return clientNameLabel.AtLeftOf(this, 16);
+                yield return clientNameLabel.WithSameCenterY(this);
             }
 
             public void Bind(ClientData data)
             {
-                nameLabel.Text = string.IsNullOrEmpty(data.Name) ? "ProjectNoClient".Tr() : data.Name;
+                var clientName = string.IsNullOrEmpty(data.Name) ? "ProjectNoClient".Tr() : data.Name;
+                clientNameLabel.Text = clientName;
             }
         }
 

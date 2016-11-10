@@ -33,5 +33,8 @@ namespace Toggl.Phoebe.Data.Json
 
         [JsonProperty("cid")]
         public long? ClientRemoteId { get; set; }
+
+        [JsonProperty("hex_color")]
+        public string HexColor { get; set; }
     }
 }

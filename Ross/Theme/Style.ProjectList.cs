@@ -31,7 +31,7 @@ namespace Toggl.Ross.Theme
             {
                 v.Font = UIFont.FromName("HelveticaNeue", 17f);
                 v.TextAlignment = UITextAlignment.Left;
-                v.TextColor = Color.LightestGray;
+                v.TextColor = Color.Steel;
             }
 
             public static void NewProjectLabel(UILabel v)
@@ -60,13 +60,19 @@ namespace Toggl.Ross.Theme
 
             private static UIImage MakeTasksBackground(UIColor circleColor)
             {
-                const int imageSize = 60;
-                const float circleDiameter = 30;
+                const int imageSize = 48;
+                const float circleDiameter = 24;
 
                 UIGraphics.BeginImageContextWithOptions(new CGSize(imageSize, imageSize), false, UIScreen.MainScreen.Scale);
                 var ctx = UIGraphics.GetCurrentContext();
 
                 ctx.SetFillColor(circleColor.CGColor);
+                ctx.SetStrokeColor(Color.FromHex("#ECEDED").CGColor);
+
+                var borderRect = new CGRect(11.5, 11.5, 25, 25);
+                ctx.SetLineWidth(2.0f);
+                ctx.StrokeEllipseInRect(borderRect);
+
                 ctx.AddArc(imageSize / 2f, imageSize / 2f, circleDiameter / 2f, 0, (float)(2 * Math.PI), true);
                 ctx.FillPath();
 

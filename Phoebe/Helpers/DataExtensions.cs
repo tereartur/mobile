@@ -398,5 +398,10 @@ namespace Toggl.Phoebe.Helpers
 
         public static RichTimeEntry FindActiveEntry(this IReadOnlyDictionary<Guid, RichTimeEntry> list) =>
         list.Values.FirstOrDefault(x => x.Data.State == TimeEntryState.Running && x.Data.Id != Guid.Empty);
+
+        public static string GetProperColor(this IProjectData self)
+        {
+            return self.HexColor ?? ProjectData.HexColors[self.Color % ProjectData.HexColors.Length];
+        }
     }
 }

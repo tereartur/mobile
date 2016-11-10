@@ -14,6 +14,7 @@ namespace Toggl.Phoebe.Data.Models
         bool UseTasksEstimate { get; }
         long WorkspaceRemoteId { get; }
         long? ClientRemoteId { get; }
+        string HexColor { get; }
         Guid WorkspaceId { get; }
         Guid ClientId { get; }
         IProjectData With(Action<ProjectData> transform);
@@ -22,7 +23,6 @@ namespace Toggl.Phoebe.Data.Models
     [Table("ProjectModel")]
     public class ProjectData : CommonData, IProjectData
     {
-
         public static readonly string[] HexColors =
         {
             "#4dc3ff", "#bc85e6", "#df7baa", "#f68d38", "#b27636",
@@ -30,7 +30,7 @@ namespace Toggl.Phoebe.Data.Models
             "#67412c", "#3c6526", "#094558", "#bc2d07", "#999999"
         };
 
-        public static readonly int DefaultColor = HexColors.Length - 1;
+        public static readonly string DefaultColor = "#999999";
 
         public static readonly int GroupedProjectColorIndex = -1;
 
@@ -53,6 +53,7 @@ namespace Toggl.Phoebe.Data.Models
         {
             Name = other.Name;
             Color = other.Color;
+            HexColor = other.HexColor;
             IsActive = other.IsActive;
             IsBillable = other.IsBillable;
             IsPrivate = other.IsPrivate;
@@ -95,5 +96,7 @@ namespace Toggl.Phoebe.Data.Models
         public Guid WorkspaceId { get; set; }
 
         public Guid ClientId { get; set; }
+
+        public string HexColor { get; set; }
     }
 }

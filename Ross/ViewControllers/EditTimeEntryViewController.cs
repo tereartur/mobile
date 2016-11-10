@@ -938,51 +938,20 @@ namespace Toggl.Ross.ViewControllers
         private class ProjectClientTaskButton : UIButton
         {
             private readonly List<NSLayoutConstraint> trackedConstraints = new List<NSLayoutConstraint>();
-            private readonly UIView container;
+
+            private readonly CircleView circle;
             private readonly UILabel projectLabel;
-            private readonly UILabel clientLabel;
             private readonly UILabel taskLabel;
 
             public ProjectClientTaskButton()
             {
-                Add(container = new UIView()
-                {
-                    TranslatesAutoresizingMaskIntoConstraints = false,
-                    UserInteractionEnabled = false,
-                });
+                BackgroundColor = Color.White;
+                SetBackgroundImage(Color.White.ToImage(), UIControlState.Normal);
+                SetBackgroundImage(Color.LightestGray.ToImage(), UIControlState.Highlighted);
 
-                var maskLayer = new CAGradientLayer()
-                {
-                    AnchorPoint = CGPoint.Empty,
-                    StartPoint = new CGPoint(0.0f, 0.0f),
-                    EndPoint = new CGPoint(1.0f, 0.0f),
-                    Colors = new[]
-                    {
-                        UIColor.FromWhiteAlpha(1, 1).CGColor,
-                        UIColor.FromWhiteAlpha(1, 1).CGColor,
-                        UIColor.FromWhiteAlpha(1, 0).CGColor,
-                    },
-                    Locations = new[]
-                    {
-                        NSNumber.FromFloat(0f),
-                        NSNumber.FromFloat(0.9f),
-                        NSNumber.FromFloat(1f),
-                    },
-                };
-                container.Layer.Mask = maskLayer;
-
-                container.Add(projectLabel = new UILabel()
-                {
-                    TranslatesAutoresizingMaskIntoConstraints = false,
-                } .Apply(Style.EditTimeEntry.ProjectLabel));
-                container.Add(clientLabel = new UILabel()
-                {
-                    TranslatesAutoresizingMaskIntoConstraints = false,
-                } .Apply(Style.EditTimeEntry.ClientLabel));
-                container.Add(taskLabel = new UILabel()
-                {
-                    TranslatesAutoresizingMaskIntoConstraints = false,
-                } .Apply(Style.EditTimeEntry.TaskLabel));
+                Add(circle = new CircleView());
+                Add(taskLabel = new UILabel());
+                Add(projectLabel = new UILabel());
             }
 
             public override void UpdateConstraints()
@@ -993,101 +962,84 @@ namespace Toggl.Ross.ViewControllers
                     trackedConstraints.Clear();
                 }
 
-                trackedConstraints.AddRange(new FluentLayout[]
-                {
-                    container.AtLeftOf(this, 15f),
-                    container.WithSameCenterY(this),
+                var buttonConstraints = new List<FluentLayout>();
 
-                    projectLabel.AtTopOf(container),
-                    projectLabel.AtLeftOf(container),
-                    null
-                } .ToLayoutConstraints());
+                var hasTask = !string.IsNullOrEmpty(TaskName);
 
-                if (!clientLabel.Hidden)
+                //Circle
+                buttonConstraints.Add(circle.AtLeftOf(this, 16));
+                buttonConstraints.Add(circle.Width().EqualTo(12));
+                buttonConstraints.Add(circle.Height().EqualTo(12));
+
+                //Project & client label
+                buttonConstraints.Add(projectLabel.ToRightOf(circle, 8));
+                buttonConstraints.Add(projectLabel.Width().EqualTo(Frame.Width - 40));
+
+                if (hasTask)
                 {
-                    var baselineOffset = (float)Math.Floor(projectLabel.Font.Descender - clientLabel.Font.Descender);
-                    trackedConstraints.AddRange(new FluentLayout[]
-                    {
-                        clientLabel.AtTopOf(container, -baselineOffset),
-                        clientLabel.AtRightOf(container),
-                        clientLabel.ToRightOf(projectLabel, 5f),
-                        clientLabel.AtBottomOf(projectLabel, baselineOffset),
-                        null
-                    } .ToLayoutConstraints());
+                    taskLabel.Text = TaskName;
+                    taskLabel.TextColor = Color.Black;
+
+                    buttonConstraints.Add(taskLabel.AtLeftOf(this, 36));
+                    buttonConstraints.Add(taskLabel.Below(projectLabel, 2));
+
+                    buttonConstraints.Add(circle.AtTopOf(this, 16));
+                    buttonConstraints.Add(projectLabel.AtTopOf(this, 11));
                 }
                 else
                 {
-                    trackedConstraints.AddRange(new FluentLayout[]
-                    {
-                        projectLabel.AtRightOf(container),
-                        null
-                    } .ToLayoutConstraints());
+                    buttonConstraints.Add(circle.WithSameCenterY(this));
+                    buttonConstraints.Add(projectLabel.WithSameCenterY(this));
                 }
 
-                if (!taskLabel.Hidden)
-                {
-                    trackedConstraints.AddRange(new FluentLayout[]
-                    {
-                        taskLabel.Below(projectLabel, 3f),
-                        taskLabel.AtLeftOf(container),
-                        taskLabel.AtRightOf(container),
-                        taskLabel.AtBottomOf(container),
-                        null
-                    } .ToLayoutConstraints());
-                }
-                else
-                {
-                    trackedConstraints.AddRange(new FluentLayout[]
-                    {
-                        projectLabel.AtBottomOf(container),
-                        null
-                    } .ToLayoutConstraints());
-                }
+                this.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
 
+                trackedConstraints.AddRange(buttonConstraints.ToLayoutConstraints());
                 AddConstraints(trackedConstraints.ToArray());
 
                 base.UpdateConstraints();
             }
 
-            public override void LayoutSubviews()
-            {
-                base.LayoutSubviews();
-
-                // Update fade mask position:
-                var bounds = container.Frame;
-                bounds.Width = Frame.Width - bounds.X;
-                container.Layer.Mask.Bounds = bounds;
-            }
-
+            private string projectName;
             public string ProjectName
             {
-                get { return projectLabel.Text; }
+                get { return projectName; }
                 set
                 {
-                    var projectName = string.IsNullOrEmpty(value) ? "EditEntryProjectHint".Tr() : value;
-                    projectLabel.Text = projectName;
+                    projectName = value;
+                    UpdateProjectLabel();
                 }
             }
 
+            private string clientName;
             public string ClientName
             {
-                get { return clientLabel.Text; }
+                get { return clientName; }
                 set
                 {
-                    if (clientLabel.Text == value)
-                    {
-                        return;
-                    }
-
-                    var visibilityChanged = string.IsNullOrWhiteSpace(clientLabel.Text) != string.IsNullOrWhiteSpace(value);
-                    clientLabel.Text = value;
-
-                    if (visibilityChanged)
-                    {
-                        SetNeedsUpdateConstraints();
-                        clientLabel.Hidden = string.IsNullOrWhiteSpace(value);
-                    }
+                    clientName = value;
+                    UpdateProjectLabel();
                 }
+            }
+
+            private void UpdateProjectLabel()
+            {
+                var color = Color.FromHex(ProjectColorHex ?? "#000000");
+                var hasClient = !string.IsNullOrEmpty(ClientName);
+                var hasProject = !string.IsNullOrEmpty(ProjectName);
+
+                var projectNameText = hasProject ? ProjectName : "EditEntryProjectHint".Tr();
+                var projectLabelText = hasClient ? $"{projectNameText} - {ClientName}" : projectNameText;
+
+                var attributedText = new NSMutableAttributedString(projectLabelText);
+                attributedText.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, projectNameText.Length));
+                if (hasClient)
+                {
+                    attributedText.AddAttribute(UIStringAttributeKey.ForegroundColor, Color.Black, new NSRange(projectNameText.Length, 3 + ClientName.Length));
+                }
+
+                circle.Hidden = !hasProject;
+                projectLabel.AttributedText = attributedText;
             }
 
             public string TaskName
@@ -1111,23 +1063,27 @@ namespace Toggl.Ross.ViewControllers
                 }
             }
 
+            private string projectColorHex;
             public string ProjectColorHex
             {
-                get { return "#ffffff"; }
+                get { return projectColorHex; }
                 set
                 {
+                    projectColorHex = value;
+
                     // If string Hex color is default or null:
-                    if (value == ProjectData.HexColors[ProjectData.DefaultColor] || string.IsNullOrEmpty(value))
+                    if (value == ProjectData.DefaultColor || string.IsNullOrEmpty(value))
                     {
                         projectLabel.Apply(Style.EditTimeEntry.ProjectHintLabel);
-                        SetBackgroundImage(Color.White.ToImage(), UIControlState.Normal);
-                        SetBackgroundImage(Color.LightestGray.ToImage(), UIControlState.Highlighted);
                     }
                     else
                     {
                         projectLabel.Apply(Style.EditTimeEntry.ProjectLabel);
-                        SetBackgroundImage(UIColor.Clear.FromHex(value).ToImage(), UIControlState.Normal);
-                        SetBackgroundImage(null, UIControlState.Highlighted);
+
+                        var color = Color.FromHex(value);
+
+                        circle.Color = color.CGColor;
+                        projectLabel.TextColor = color;
                     }
                 }
             }
