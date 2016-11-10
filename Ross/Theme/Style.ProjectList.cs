@@ -31,7 +31,7 @@ namespace Toggl.Ross.Theme
             {
                 v.Font = UIFont.FromName("HelveticaNeue", 17f);
                 v.TextAlignment = UITextAlignment.Left;
-                v.TextColor = Color.LightestGray;
+                v.TextColor = Color.Steel;
             }
 
             public static void NewProjectLabel(UILabel v)
@@ -69,7 +69,7 @@ namespace Toggl.Ross.Theme
                 ctx.SetFillColor(circleColor.CGColor);
                 ctx.SetStrokeColor(Color.FromHex("#ECEDED").CGColor);
 
-                var borderRect = new CGRect(12, 12, 25, 25);
+                var borderRect = new CGRect(11.5, 11.5, 25, 25);
                 ctx.SetLineWidth(2.0f);
                 ctx.StrokeEllipseInRect(borderRect);
 
