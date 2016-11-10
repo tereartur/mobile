@@ -5,6 +5,7 @@ using System.Linq;
 using SQLite.Net;
 using SQLite.Net.Interop;
 using Toggl.Phoebe.Data.Models;
+using Toggl.Phoebe.Helpers;
 
 namespace Toggl.Phoebe.Data
 {
@@ -44,6 +45,7 @@ namespace Toggl.Phoebe.Data
 
             CleanOldDraftEntry();
             DeleteDuplicateTags();
+            AddHexColorToProjectTable();
         }
 
         public void Dispose()
@@ -109,6 +111,11 @@ namespace Toggl.Phoebe.Data
             if (toDelete.Count == 0)
                 return;
             cnn.Table<TagData>().Delete(t => toDelete.Contains(t.Id));
+        }
+
+        private void AddHexColorToProjectTable()
+        {
+            cnn.CreateTable<ProjectData>();
         }
 
         internal static List<Type> GetDataModels()
