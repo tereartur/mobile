@@ -42,13 +42,10 @@ namespace Toggl.Phoebe.Data.Json
 
                 // User mapping
                 config.CreateMap<UserJson, UserData>()
-                .ForMember(dest => dest.TrackingMode, opt => opt.MapFrom(src => src.StoreStartAndStopTime ? TrackingMode.StartNew : TrackingMode.Continue))
-                .ForMember(dest => dest.ExperimentIncluded, opt => opt.MapFrom(src => src.OBM.Included))
-                .ForMember(dest => dest.ExperimentNumber, opt => opt.MapFrom(src => src.OBM.Number));
+                .ForMember(dest => dest.TrackingMode, opt => opt.MapFrom(src => src.StoreStartAndStopTime ? TrackingMode.StartNew : TrackingMode.Continue));
 
                 config.CreateMap<UserData, UserJson>()
-                .ForMember(dest => dest.CreatedWith, opt => opt.UseValue(Platform.DefaultCreatedWith))
-                .ForMember(dest => dest.OBM, opt => opt.ResolveUsing<OBMResolver> ());
+                .ForMember(dest => dest.CreatedWith, opt => opt.UseValue(Platform.DefaultCreatedWith));
 
                 // TimeEntry mapping
                 config.CreateMap<TimeEntryJson, TimeEntryData>()
@@ -252,18 +249,6 @@ namespace Toggl.Phoebe.Data.Json
             }
         }
         #endregion
-
-        public class OBMResolver : ValueResolver<UserData, OBMJson>
-        {
-            protected override OBMJson ResolveCore(UserData source)
-            {
-                return new OBMJson
-                {
-                    Included = source.ExperimentIncluded,
-                    Number = source.ExperimentNumber
-                };
-            }
-        }
 
         #region Report resolvers
         public class DurationResolver : ValueResolver<TimeEntryData, long>
