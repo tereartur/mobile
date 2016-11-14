@@ -63,7 +63,7 @@ namespace Toggl.Ross.Views
         public InfiniteScrollView(IInfiniteScrollViewSource viewSource)
         {
             this.viewSource = viewSource;
-            pages = new List<TView> ();
+            pages = new List<TView>();
             _containerView = new UIView();
             Add(_containerView);
 
@@ -169,12 +169,11 @@ namespace Toggl.Ross.Views
 
         public void RefreshVisibleView()
         {
-            if (Dragging)
-            {
-                return;
-            }
+            if (Dragging) return;
 
             var currentView = pages.Find(v => v.Frame.X.CompareTo(ContentOffset.X) == 0);
+            if (currentView == null) return;
+
             var center = currentView.Center;
             TView newView = InsertView();
             var offSetY = ContentSize.Height;
@@ -255,11 +254,11 @@ namespace Toggl.Ross.Views
             {
                 tmpOffset = (nint)Convert.ToInt32(ContentOffset.X / pageWidth);
                 PlaceNewViewOnRight(minX);
-                currentPage = pages [0];
+                currentPage = pages[0];
             }
 
             // add views that are missing on right side
-            TView lastView = pages [pages.Count - 1];
+            TView lastView = pages[pages.Count - 1];
             nfloat rightEdge = CGRectGetMaxX(lastView.Frame);
             while (rightEdge < maxX)
             {
@@ -267,7 +266,7 @@ namespace Toggl.Ross.Views
             }
 
             // add views that are missing on left side
-            TView firstView = pages [0];
+            TView firstView = pages[0];
             nfloat leftEdge = CGRectGetMinX(firstView.Frame);
             while (leftEdge > minX)
             {
