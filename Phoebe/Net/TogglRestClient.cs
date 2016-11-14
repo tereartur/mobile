@@ -835,21 +835,15 @@ namespace Toggl.Phoebe.Net
         public async Task<UserJson> CreateUser(UserJson jsonObject)
         {
             var url = new Uri(v8Url, jsonObject.GoogleAccessToken != null ? "signups?app_name=toggl_mobile" : "signups");
-            jsonObject.CreatedWith = String.Format("{0}-obm-{1}", Platform.DefaultCreatedWith, OBMExperimentManager.ExperimentNumber);
+            jsonObject.CreatedWith = string.Format("{0}-obm-{1}", Platform.DefaultCreatedWith, OBMExperimentManager.ExperimentNumber);
 
             var user = await CreateObject(string.Empty, url, jsonObject).ConfigureAwait(false);
-
-            user.OBM = await(jsonObject.GoogleAccessToken != null
-                             ? getObmWithGoogleToken(jsonObject.GoogleAccessToken)
-                             : getObm(jsonObject.Email, jsonObject.Password)).ConfigureAwait(false); ;
 
             return user;
         }
 
         public async Task<UserJson> GetUser(string username, string password)
         {
-            var obmTask = getObm(username, password).ConfigureAwait(false);
-
             var url = new Uri(v8Url, "me");
 
             var httpReq = SetupRequest(username, password, createHttpGetMessage(url));
@@ -858,15 +852,11 @@ namespace Toggl.Phoebe.Net
             var wrap = JsonConvert.DeserializeObject<Wrapper<UserJson>> (respData);
             var user = wrap.Data;
 
-            user.OBM = await obmTask;
-
             return user;
         }
 
         public async Task<UserJson> GetUser(string googleAccessToken)
         {
-            var obmTask = getObmWithGoogleToken(googleAccessToken).ConfigureAwait(false);
-
             var url = new Uri(v8Url, "me?app_name=toggl_mobile");
 
             var httpReq = SetupRequestWithGoogleToken(googleAccessToken, createHttpGetMessage(url));
@@ -875,58 +865,15 @@ namespace Toggl.Phoebe.Net
             var wrap = JsonConvert.DeserializeObject<Wrapper<UserJson>> (respData);
             var user = wrap.Data;
 
-            user.OBM = await obmTask;
-
             return user;
         }
 
         public async Task<UserJson> UpdateUser(string authToken, UserJson jsonObject)
         {
-            var obmTask = getObmWithApiToken(authToken).ConfigureAwait(false);
-
             var url = new Uri(v8Url, "me");
             var user = await UpdateObject(authToken, url, jsonObject).ConfigureAwait(false);
 
-            user.OBM = await obmTask;
-
             return user;
-        }
-
-        private Task<OBMJson> getObm(string username, string password)
-        {
-            return getObm(req => SetupRequest(username, password, req));
-        }
-        private Task<OBMJson> getObmWithGoogleToken(string googleAccessToken)
-        {
-            return getObm(req => SetupRequestWithGoogleToken(googleAccessToken, req));
-        }
-        private Task<OBMJson> getObmWithApiToken(string authToken)
-        {
-            return getObm(req => SetupRequest(authToken, req));
-        }
-        private async Task<OBMJson> getObm(Action<HttpRequestMessage> setupAuthentication)
-        {
-            try
-            {
-                var url = new Uri(v9Url, "me/experiments/mobile");
-                var httpReq = createHttpGetMessage(url);
-                setupAuthentication(httpReq);
-                var httpResp = await SendAsync(httpReq).ConfigureAwait(false);
-                var respData = await httpResp.Content.ReadAsStringAsync().ConfigureAwait(false);
-                var obm = JsonConvert.DeserializeObject<OBMJson>(respData);
-                return obm;
-            }
-            catch (Exception e)
-            {
-                // this usually happens when the user tries logging in with invalid credentials.
-                // since the actual login request already throws,
-                // this task is never awaited in the current implementation,
-                // it will cause the process to be killed once the task throws in its finalizer
-                // (catching all is not an ideal solution, but prevents this)
-                ServiceContainer.Resolve<ILogger>()
-                .Warning(LogTag, e, "Fetching OBM data failed. Exception was caught and silently discarded.");
-                return null;
-            }
         }
 
         // TODO: For testing purposes only

@@ -61,7 +61,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Data\Json\CommonJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Data\Json\FeedbackJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Data\Json\JsonMapper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Data\Json\OBMJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Data\Json\ProjectJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Data\Json\ProjectUserJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Data\Json\ReportJson.cs" />
