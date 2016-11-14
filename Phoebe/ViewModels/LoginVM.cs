@@ -88,9 +88,10 @@ namespace Toggl.Phoebe.ViewModels
 
         public void TryLogin(string email, string password)
         {
+            RxChain.Send(new DataMsg.ResetState());
+
             if (CurrentLoginMode == LoginMode.Login)
             {
-                RxChain.Send(new DataMsg.ResetState());
                 RxChain.Send(ServerRequest.Authenticate.Login(email, password));
             }
             else
@@ -101,9 +102,10 @@ namespace Toggl.Phoebe.ViewModels
 
         public void TryLoginWithGoogle(string token)
         {
+            RxChain.Send(new DataMsg.ResetState());
+
             if (CurrentLoginMode == LoginMode.Login)
             {
-                RxChain.Send(new DataMsg.ResetState());
                 RxChain.Send(ServerRequest.Authenticate.LoginWithGoogle(token));
             }
             else
