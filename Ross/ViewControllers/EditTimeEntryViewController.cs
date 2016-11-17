@@ -201,7 +201,8 @@ namespace Toggl.Ross.ViewControllers
             descriptionBinding = this.SetBinding(() => ViewModel.Description, () => descriptionTextField.Text);
             ViewModel.SuggestionsCollection.CollectionChanged += (s, e) =>
             {
-                SuggestionMode = ViewModel.SuggestionsCollection.Count > 0;
+                if (ViewModel.SuggestionsCollection.Count == 0) return; 
+                SuggestionMode = true;
             };
 
             isPremiumBinding = this.SetBinding(() => ViewModel.IsPremium, () => billableSwitch.Hidden).ConvertSourceToTarget(isPremium => !isPremium);
