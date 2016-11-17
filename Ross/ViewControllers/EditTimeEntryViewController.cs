@@ -1030,7 +1030,7 @@ namespace Toggl.Ross.ViewControllers
                 var hasProject = !string.IsNullOrEmpty(ProjectName);
 
                 var projectNameText = hasProject ? ProjectName : "EditEntryProjectHint".Tr();
-                var projectLabelText = hasClient ? $"{projectNameText} - {ClientName}" : projectNameText;
+                var projectLabelText = hasClient ? $"{projectNameText} · {ClientName}" : projectNameText;
 
                 var attributedText = new NSMutableAttributedString(projectLabelText);
                 attributedText.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, projectNameText.Length));

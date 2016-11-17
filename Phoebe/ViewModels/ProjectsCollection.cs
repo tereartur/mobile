@@ -106,7 +106,7 @@ namespace Toggl.Phoebe.ViewModels
         private void CreateSortedCollection(IEnumerable<SuperProjectData> projectList)
         {
             var enumerable = projectList as IList<SuperProjectData> ?? projectList.ToList();
-            var data = new List<ICommonData> ();
+            var data = new List<ICommonData>();
 
             // TODO: Maybe group using linq is clearer
             if (sortBy == SortProjectsBy.Clients)
@@ -141,28 +141,26 @@ namespace Toggl.Phoebe.ViewModels
 
         public void AddTasks(IProjectData project)
         {
+            this.OfType<IProjectData>().ForEach(x => x.IsCollapsed = true);
+
             // Remove previous tasks
             var oldTaskIndex = this.IndexOf(p => p is ITaskData);
+            var newTaskIndex = this.IndexOf(p => p.Id == project.Id) + 1;
+
             if (oldTaskIndex != -1)
             {
-                RemoveRange(this.OfType<ITaskData> ());
+                RemoveRange(this.OfType<ITaskData>());
             }
 
             // Insert new tasks
-            var newTaskIndex = this.IndexOf(p => p.Id == project.Id) + 1;
             if (oldTaskIndex != newTaskIndex)
             {
+                project.IsCollapsed = false;
                 InsertRange(tasks.Where(p => p.ProjectId == project.Id), newTaskIndex);
             }
         }
 
-        public IEnumerable<ICommonData> Data
-        {
-            get
-            {
-                return this;
-            }
-        }
+        public IEnumerable<ICommonData> Data => this;
 
         public class SuperProjectData : ProjectData
         {

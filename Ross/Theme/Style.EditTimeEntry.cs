@@ -41,13 +41,13 @@ namespace Toggl.Ross.Theme
 
             public static void ProjectHintLabel(UILabel v)
             {
-                v.Font = UIFont.FromName("HelveticaNeue-Light", 17f);
+                v.Font = Font.MainLight(17f);
                 v.TextColor = Color.Gray;
             }
 
             public static void ProjectLabel(UILabel v)
             {
-                v.Font = UIFont.FromName("HelveticaNeue-Medium", 17f);
+                v.Font = Font.Main(17f);
                 v.TextColor = Color.Black;
             }
 

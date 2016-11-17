@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 using SQLite.Net.Attributes;
 
 namespace Toggl.Phoebe.Data.Models
@@ -18,6 +19,8 @@ namespace Toggl.Phoebe.Data.Models
         Guid WorkspaceId { get; }
         Guid ClientId { get; }
         IProjectData With(Action<ProjectData> transform);
+
+        bool IsCollapsed { get; set; }
     }
 
     [Table("ProjectModel")]
@@ -98,5 +101,8 @@ namespace Toggl.Phoebe.Data.Models
         public Guid ClientId { get; set; }
 
         public string HexColor { get; set; }
+
+        [Ignore, JsonIgnore]
+        public bool IsCollapsed { get; set; } = true;
     }
 }

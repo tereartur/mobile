@@ -98,7 +98,6 @@ namespace Toggl.Ross.ViewControllers
                 ContentView.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
             }
 
-
             public void Bind(ITimeEntryData data)
             {
                 var projectName = "LogCellNoProject".Tr();
@@ -123,7 +122,7 @@ namespace Toggl.Ross.ViewControllers
                     if (data.TaskId != Guid.Empty)
                     {
                         var taskData = StoreManager.Singleton.AppState.Tasks[data.TaskId];
-                        projectName = $"{projectName} - {taskData.Name}";
+                        projectName = $"{projectName} · {taskData.Name}";
                     }
                 }
 

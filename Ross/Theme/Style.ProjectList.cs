@@ -55,8 +55,15 @@ namespace Toggl.Ross.Theme
                 v.SetBackgroundImage(TasksBackgroundHighlighted.Value, UIControlState.Highlighted);
             }
 
-            private static Lazy<UIImage> TasksBackgroundDefault = new Lazy<UIImage> (() => MakeTasksBackground(Color.White));
-            private static Lazy<UIImage> TasksBackgroundHighlighted = new Lazy<UIImage> (() => MakeTasksBackground(Color.White.ColorWithAlpha(0.75f)));
+            public static void ArrowTasksButtons(UIButton v)
+            {
+                v.SetBackgroundImage(ArrowTasksBackgroundDefault.Value, UIControlState.Normal);
+            }
+
+            private static Lazy<UIImage> TasksBackgroundDefault = new Lazy<UIImage>(() => MakeTasksBackground(Color.White));
+            private static Lazy<UIImage> TasksBackgroundHighlighted = new Lazy<UIImage>(() => MakeTasksBackground(Color.White.ColorWithAlpha(0.75f)));
+
+            private static Lazy<UIImage> ArrowTasksBackgroundDefault = new Lazy<UIImage>(MakeArrowTasksBackground);
 
             private static UIImage MakeTasksBackground(UIColor circleColor)
             {
@@ -70,11 +77,32 @@ namespace Toggl.Ross.Theme
                 ctx.SetStrokeColor(Color.FromHex("#ECEDED").CGColor);
 
                 var borderRect = new CGRect(11.5, 11.5, 25, 25);
-                ctx.SetLineWidth(2.0f);
+                ctx.SetLineWidth(1.0f);
                 ctx.StrokeEllipseInRect(borderRect);
 
                 ctx.AddArc(imageSize / 2f, imageSize / 2f, circleDiameter / 2f, 0, (float)(2 * Math.PI), true);
                 ctx.FillPath();
+
+                var image = UIGraphics.GetImageFromCurrentImageContext();
+                UIGraphics.EndImageContext();
+
+                return image;
+            }
+
+            private static UIImage MakeArrowTasksBackground()
+            {
+                const int imageSize = 48;
+                const float circleDiameter = 24;
+
+                UIGraphics.BeginImageContextWithOptions(new CGSize(imageSize, imageSize), false, UIScreen.MainScreen.Scale);
+                var ctx = UIGraphics.GetCurrentContext();
+
+                ctx.SetFillColor(Color.FromHex("#ECEDED").CGColor);
+
+                ctx.AddArc(imageSize / 2f, imageSize / 2f, circleDiameter / 2f, 0, (float)(2 * Math.PI), true);
+                ctx.FillPath();
+
+                ctx.DrawImage(new CGRect(19, 22, 10, 6), UIImage.FromBundle("iconUp").CGImage);
 
                 var image = UIGraphics.GetImageFromCurrentImageContext();
                 UIGraphics.EndImageContext();

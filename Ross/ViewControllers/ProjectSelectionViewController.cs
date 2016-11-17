@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Cirrious.FluentLayouts.Touch;
-using CoreAnimation;
 using CoreGraphics;
 using Foundation;
 using GalaSoft.MvvmLight.Helpers;
@@ -60,7 +59,7 @@ namespace Toggl.Ross.ViewControllers
             TableView.TableFooterView = defaultFooterView;
 
             viewModel = new ProjectListVM(StoreManager.Singleton.AppState, workspaceId);
-            TableView.Source = new Source(this, viewModel);
+            TableView.Source = new Source(this, viewModel, ReloadRow);
 
             var addBtn = new UIBarButtonItem(UIBarButtonSystemItem.Add, OnAddNewProject);
             if (viewModel.WorkspaceList.Count > 1)
@@ -76,6 +75,11 @@ namespace Toggl.Ross.ViewControllers
             TableView.TableFooterView = null;
 
             UpdateTopProjectsHeader();
+        }
+
+        private void ReloadRow(NSIndexPath indexPath)
+        {
+            TableView.ReloadRows(new[] { indexPath }, UITableViewRowAnimation.Automatic);
         }
 
         internal void UpdateTopProjectsHeader()
@@ -105,7 +109,7 @@ namespace Toggl.Ross.ViewControllers
             constraints.Add(headerLabel.Width().EqualTo(View.Frame.Width));
 
             UIView previousView = headerLabel;
-           
+
             foreach (var project in topProjects)
             {
                 var buttonConstraints = new List<FluentLayout>();
@@ -135,7 +139,7 @@ namespace Toggl.Ross.ViewControllers
 
                 //Project & client label
                 var projectLabel = new UILabel();
-                var projectLabelText = hasClient ? $"{project.Name} - {project.ClientName}" : project.Name;
+                var projectLabelText = hasClient ? $"{project.Name} · {project.ClientName}" : project.Name;
 
                 var attributedText = new NSMutableAttributedString(projectLabelText);
                 attributedText.AddAttribute(UIStringAttributeKey.ForegroundColor, color, new NSRange(0, project.Name.Length));
@@ -244,11 +248,14 @@ namespace Toggl.Ross.ViewControllers
         {
             private readonly ProjectSelectionViewController owner;
             private readonly ProjectListVM viewModel;
+            private readonly Action<NSIndexPath> reloadRow;
 
-            public Source(ProjectSelectionViewController owner, ProjectListVM viewModel) : base(owner.TableView, viewModel.ProjectList)
+            public Source(ProjectSelectionViewController owner, ProjectListVM viewModel, Action<NSIndexPath> reloadRow)
+                : base(owner.TableView, viewModel.ProjectList)
             {
                 this.owner = owner;
                 this.viewModel = viewModel;
+                this.reloadRow = reloadRow;
             }
 
             public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
@@ -259,7 +266,11 @@ namespace Toggl.Ross.ViewControllers
                 if (data is ProjectData)
                 {
                     var cell = (ProjectCell)tableView.DequeueReusableCell(ProjectCellId);
-                    cell.Bind((ProjectsCollection.SuperProjectData)data, viewModel.ProjectList.AddTasks);
+                    cell.Bind((ProjectsCollection.SuperProjectData)data, projectData =>
+                    {
+                        viewModel.ProjectList.AddTasks(projectData);
+                        reloadRow(indexPath);
+                    });
                     return cell;
                 }
                 else
@@ -308,6 +319,7 @@ namespace Toggl.Ross.ViewControllers
             private CircleView circleView;
             private UILabel projectLabel;
             private UIButton tasksButton;
+            private UIButton arrowTasksButton;
 
             private ProjectsCollection.SuperProjectData projectData;
             private Action<ProjectData> onPressedTagBtn;
@@ -317,12 +329,17 @@ namespace Toggl.Ross.ViewControllers
                 this.Apply(Style.Screen);
 
                 BackgroundColor = Color.White;
+                PreservesSuperviewLayoutMargins = false;
+                SeparatorInset = UIEdgeInsets.Zero;
+                LayoutMargins = UIEdgeInsets.Zero;
 
                 Add(circleView = new CircleView());
                 Add(tasksButton = new UIButton().Apply(Style.ProjectList.TasksButtons));
                 Add(projectLabel = new UILabel().Apply(Style.ProjectList.ProjectLabel));
+                Add(arrowTasksButton = new UIButton().Apply(Style.ProjectList.ArrowTasksButtons));
 
                 tasksButton.TouchUpInside += OnTasksButtonTouchUpInside;
+                arrowTasksButton.TouchUpInside += OnTasksButtonTouchUpInside;
 
                 this.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
                 this.AddConstraints(GenerateConstraints());
@@ -350,8 +367,13 @@ namespace Toggl.Ross.ViewControllers
                 projectLabel.TextColor = color;
                 projectLabel.Text = projectData.Name;
 
+                var shouldNotShowTask = projectData.TaskNumber == 0;
+
+                arrowTasksButton.Selected = false;
+                arrowTasksButton.Hidden = shouldNotShowTask || projectData.IsCollapsed;
+
                 tasksButton.Selected = false;
-                tasksButton.Hidden = projectData.TaskNumber == 0;
+                tasksButton.Hidden = shouldNotShowTask || !projectData.IsCollapsed;
                 tasksButton.SetTitleColor(Color.Steel, UIControlState.Normal);
                 tasksButton.SetTitle(projectData.TaskNumber.ToString(), UIControlState.Normal);
             }
@@ -365,11 +387,11 @@ namespace Toggl.Ross.ViewControllers
                 yield return circleView.WithSameCenterY(this);
 
                 //Tasks buttons
-                if (!tasksButton.Hidden)
-                {
-                    yield return tasksButton.AtRightOf(this, 16);
-                    yield return tasksButton.WithSameCenterY(this);
-                }
+                yield return tasksButton.AtRightOf(this, 16);
+                yield return tasksButton.WithSameCenterY(this);
+
+                yield return arrowTasksButton.AtRightOf(this, 16);
+                yield return arrowTasksButton.WithSameCenterY(this);
 
                 //Project
                 yield return projectLabel.WithSameCenterY(this);
@@ -390,10 +412,12 @@ namespace Toggl.Ross.ViewControllers
 
             public TaskCell(IntPtr handle) : base(handle)
             {
-                Add(taskNameLabel = new UILabel().Apply(Style.ProjectList.TaskLabel));
                 BackgroundColor = Color.FromHex("#ECEDED");
+                PreservesSuperviewLayoutMargins = false;
+                SeparatorInset = UIEdgeInsets.Zero;
+                LayoutMargins = UIEdgeInsets.Zero;
 
-                taskNameLabel.TextColor = Color.Black;
+                Add(taskNameLabel = new UILabel { TextColor = Color.Black }.Apply(Style.ProjectList.TaskLabel));
 
                 this.SubviewsDoNotTranslateAutoresizingMaskIntoConstraints();
                 this.AddConstraints(GenerateConstraints());
@@ -419,6 +443,8 @@ namespace Toggl.Ross.ViewControllers
             public SectionHeaderView(IntPtr ptr) : base(ptr)
             {
                 BackgroundColor = Color.FromHex("#ECEDED");
+                PreservesSuperviewLayoutMargins = false;
+                LayoutMargins = UIEdgeInsets.Zero;
 
                 Add(clientNameLabel = new UILabel().Apply(Style.Log.HeaderDateLabel));
 
