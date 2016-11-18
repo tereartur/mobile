@@ -255,6 +255,7 @@ namespace Toggl.Ross.ViewControllers
                 isRunningBinding.Detach();
                 ViewModel.Dispose();
             }
+
             base.ViewWillDisappear(animated);
         }
 
@@ -1079,13 +1080,12 @@ namespace Toggl.Ross.ViewControllers
                     }
                     else
                     {
-                        projectLabel.Apply(Style.EditTimeEntry.ProjectLabel);
-
                         var color = Color.FromHex(value);
 
                         circle.Color = color.CGColor;
-                        projectLabel.TextColor = color;
                     }
+
+                    UpdateProjectLabel();
                 }
             }
 

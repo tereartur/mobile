@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Cirrious.FluentLayouts.Touch;
 using CoreGraphics;
 using Foundation;
@@ -99,7 +100,7 @@ namespace Toggl.Ross.ViewControllers
 
             var tableHeader = new UIView(new CGRect(0, 0, View.Frame.Width, headerHeight));
 
-            var headerLabel = new UILabel() { Text = TopProjectsKey.Tr() };
+            var headerLabel = new UILabel { Text = TopProjectsKey.Tr() };
             headerLabel.Apply(Style.Log.HeaderDateLabel);
             tableHeader.Add(headerLabel);
 
@@ -266,9 +267,10 @@ namespace Toggl.Ross.ViewControllers
                 if (data is ProjectData)
                 {
                     var cell = (ProjectCell)tableView.DequeueReusableCell(ProjectCellId);
-                    cell.Bind((ProjectsCollection.SuperProjectData)data, projectData =>
+                    cell.Bind((ProjectsCollection.SuperProjectData)data, async projectData =>
                     {
                         viewModel.ProjectList.AddTasks(projectData);
+                        await Task.Delay(250);
                         reloadRow(indexPath);
                     });
                     return cell;
@@ -354,6 +356,7 @@ namespace Toggl.Ross.ViewControllers
                 {
                     circleView.Hidden = true;
                     tasksButton.Hidden = true;
+                    arrowTasksButton.Hidden = true;
                     projectLabel.Text = "ProjectNoProject".Tr();
                     projectLabel.Apply(Style.ProjectList.NoProjectLabel);
                     return;
