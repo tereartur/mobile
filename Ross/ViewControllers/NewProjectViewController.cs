@@ -155,7 +155,7 @@ namespace Toggl.Ross.ViewControllers
 
             var random = new Random();
             //TODO: HEXCOLORS Use picker/pick random color among EVERY possible random color
-            var newProjectData = await ViewModel.SaveProjectAsync(projectName, ProjectData.HexColors[random.Next(ProjectData.HexColors.Length - 1)]);
+            var newProjectData = await ViewModel.SaveProjectAsync(projectName, random.Next(ProjectData.HexColors.Length - 1));
             handler.OnProjectSelected(newProjectData.Id, Guid.Empty);
 
             // Go back to EditTimeEntryViewController
