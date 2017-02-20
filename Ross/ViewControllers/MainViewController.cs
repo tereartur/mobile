@@ -202,9 +202,23 @@ namespace Toggl.Ross.ViewControllers
             {
                 PushViewController(new FeedbackViewController(), true);
             }
+            else if (btnId == LeftViewController.LogoutPageId)
+            {
+                var alert = UIAlertController.Create(
+                    "Sign Out",
+                    "Are you sure you want to sign out?\nAny unsynced data will be lost!",
+                    UIAlertControllerStyle.Alert
+                );
+
+                alert.AddAction(UIAlertAction.Create("Cancel", UIAlertActionStyle.Cancel, null));
+                alert.AddAction(UIAlertAction.Create("Sign Out", UIAlertActionStyle.Destructive,
+                                                     h => RxChain.Send(new DataMsg.ResetState())
+                                                    ));
+                PresentViewController(alert, true, null);
+            }
             else
             {
-                RxChain.Send(new DataMsg.ResetState());
+                ServiceContainer.Resolve<ILogger>().Warning("", "User selected invalid menu button.");
             }
 
             CloseMenu();
