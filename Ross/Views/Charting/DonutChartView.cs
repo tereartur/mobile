@@ -380,13 +380,13 @@ namespace Toggl.Ross.Views.Charting
         public UIColor ColorForSliceAtIndex(XYDonutChart pieChart, nint index)
         {
             string hex;
-            if (DonutProjectList [(int)index].Color == ProjectData.GroupedProjectColorIndex)
+            if (DonutProjectList [(int)index].Color == ProjectData.GroupedProjectColor)
             {
                 hex = ProjectData.GroupedProjectColor;
             }
             else
             {
-                hex = ProjectData.HexColors [DonutProjectList [(int)index].Color % ProjectData.HexColors.Length];
+                hex = DonutProjectList[(int)index].Color;
             }
             return Color.FromHex(hex);
         }

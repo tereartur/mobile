@@ -23,14 +23,14 @@ namespace Toggl.Ross.Views
                 _data = value;
 
                 string hex;
-                if (_data.Color == ProjectData.GroupedProjectColorIndex)
+                if (_data.Color == ProjectData.GroupedProjectColor)
                 {
                     hex = ProjectData.GroupedProjectColor;
                     projectTitleLabel.Text = string.Format("ReportsCellGroupedProject".Tr(), _data.Project);
                 }
                 else
                 {
-                    hex = ProjectData.HexColors [ _data.Color % ProjectData.HexColors.Length];
+                    hex = _data.Color;
                     projectTitleLabel.Text = string.IsNullOrEmpty(_data.Project) ? "ReportsCellNoProject".Tr() : _data.Project;
                 }
                 circleView.BackgroundColor = Color.FromHex(hex);

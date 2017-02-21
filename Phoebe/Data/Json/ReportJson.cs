@@ -52,6 +52,9 @@ namespace Toggl.Phoebe.Data.Json
 
         [JsonProperty("color")]
         public string Color { get; set; }
+
+        [JsonProperty("hex_color")]
+        public string HexColor { get; set; }
     }
 
     #endregion

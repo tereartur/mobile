@@ -132,7 +132,7 @@ namespace Toggl.Phoebe.Reports
             var containerProject = new ReportProject
             {
                 Currencies = new List<ReportCurrency>(),
-                Color = ProjectData.GroupedProjectColorIndex
+                Color = ProjectData.GroupedProjectColor
             };
 
             const float minimunWeight = 0.01f; // minimum weight of project respect to total time

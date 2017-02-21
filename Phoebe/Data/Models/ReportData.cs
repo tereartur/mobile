@@ -38,7 +38,6 @@ namespace Toggl.Phoebe.Data.Models
 
     public struct ReportActivity
     {
-
         public DateTime StartTime { get; set; }
 
         public long BillableTime { get; set; }
@@ -50,14 +49,13 @@ namespace Toggl.Phoebe.Data.Models
 
     public struct ReportProject
     {
-
         public string Project { get; set; }
 
         public long TotalTime { get; set; }
 
         public string Client { get; set; }
 
-        public int Color { get; set; }
+        public string Color { get; set; }
 
         public long BillableTime { get; set; }
 
@@ -72,7 +70,6 @@ namespace Toggl.Phoebe.Data.Models
 
     public struct ReportTimeEntry
     {
-
         public string Title { get; set; }
 
         public long Time { get; set; }
@@ -88,10 +85,8 @@ namespace Toggl.Phoebe.Data.Models
 
     public struct ReportCurrency
     {
-
         public string Currency { get; set; }
 
         public float Amount { get; set; }
-
     }
 }

@@ -335,7 +335,7 @@ namespace Toggl.Phoebe.Data.Json
                     {
                         Project = item.Description.Project,
                         TotalTime = item.TotalTime,
-                        Color = Int32.TryParse(item.Description.Color, out colorIndex) ? colorIndex : ProjectData.HexColors.Length - 1
+                        Color = item.Description.HexColor ?? ProjectData.HexColors[Int32.TryParse(item.Description.Color, out colorIndex) ? colorIndex : ProjectData.HexColors.Length - 1]
                     };
                     p.Items = new List<ReportTimeEntry>();
                     if (item.Items != null)
