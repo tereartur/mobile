@@ -839,6 +839,16 @@ namespace Toggl.Phoebe.Net
 
             var user = await CreateObject(string.Empty, url, jsonObject).ConfigureAwait(false);
 
+            //HACK Backend sometimes creates the account, but fails to return a valid ApiToken.
+            // In such cases, since the account has been succesfully created, we login the user using its credentials
+            if (user != null && string.IsNullOrEmpty(user.ApiToken))
+            {
+                var logger = ServiceContainer.Resolve<ILogger>();
+                logger.Error(LogTag, "Got invalid ApiToken when creating a user.");
+
+                user = await GetUser(jsonObject.Email, jsonObject.Password);
+            }
+
             return user;
         }
 
