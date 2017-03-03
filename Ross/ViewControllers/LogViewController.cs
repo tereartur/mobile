@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
@@ -33,7 +32,6 @@ namespace Toggl.Ross.ViewControllers
         readonly static NSString SectionCellId = new NSString("SectionCellId");
 
         private SimpleEmptyView defaultEmptyView;
-        private UIView obmEmptyView;
         private UIView reloadView;
         private UIActivityIndicatorView defaultFooterView;
         private StatusView statusView;
@@ -94,12 +92,6 @@ namespace Toggl.Ross.ViewControllers
             {
                 Title = "LogEmptyTitle".Tr(),
                 Message = "LogEmptyMessage".Tr(),
-            };
-
-            obmEmptyView = new OBMEmptyView
-            {
-                Title = "LogOBMEmptyTitle".Tr(),
-                Message = "LogOBMEmptyMessage".Tr(),
             };
 
             reloadView = new ReloadTableViewFooter
@@ -175,7 +167,6 @@ namespace Toggl.Ross.ViewControllers
         {
             base.ViewDidLayoutSubviews();
             defaultEmptyView.Frame = new CGRect(0, (View.Frame.Size.Height - 200f) / 2, View.Frame.Size.Width, 200f);
-            obmEmptyView.Frame = new CGRect(0, 15f, View.Frame.Size.Width, View.Frame.Height - timerBar.Frame.Height - UIApplication.SharedApplication.StatusBarFrame.Height);
             reloadView.Bounds = new CGRect(0f, 0f, View.Frame.Size.Width, 70f);
             reloadView.Center = new CGPoint(View.Center.X, reloadView.Center.Y);
             statusView.Frame = new CGRect(0, View.Frame.Height, View.Frame.Width, StatusBarHeight);
@@ -266,9 +257,6 @@ namespace Toggl.Ross.ViewControllers
         {
             if (!ViewModel.IsEntryRunning)
             {
-                // Send experiment data.
-                ViewModel.ReportExperiment("startbutton", null);
-
                 var timeEntry = await ViewModel.StartNewTimeEntryAsync();
 
                 openEditViewForNewEntry(timeEntry);
@@ -289,9 +277,7 @@ namespace Toggl.Ross.ViewControllers
 
         private void openEditViewForManualEntry()
         {
-            var editController = EditTimeEntryViewController.ForManualAddition(
-                                     () => ViewModel.ReportExperiment("addbutton", null)
-                                 );
+            var editController = EditTimeEntryViewController.ForManualAddition(() => { });
             var durationViewController = new DurationChangeViewController(editController);
             var projectViewController = getProjectViewControllerIfChooseProjectForNew(editController);
 
@@ -376,15 +362,9 @@ namespace Toggl.Ross.ViewControllers
             UIView emptyView = defaultEmptyView; // Default empty view.
             var showWelcome = ViewModel.WelcomeScreenShouldBeShown;
             var hasItems = ViewModel.Collection.Count > 0;
-            var isInExperiment = ViewModel.ExperimentShouldBeShown;
 
             // According to settings, show welcome message or no.
             ((SimpleEmptyView)emptyView).Title = showWelcome ? "LogWelcomeTitle".Tr() : "LogEmptyTitle".Tr();
-
-            if (showWelcome && isInExperiment)
-            {
-                emptyView = obmEmptyView;
-            }
 
             tableView.TableFooterView = hasItems ? new UIView() : emptyView;
         }

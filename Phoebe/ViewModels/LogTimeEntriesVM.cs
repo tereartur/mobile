@@ -170,24 +170,8 @@ namespace Toggl.Phoebe.ViewModels
             if (te != null)
                 RxChain.Send(new DataMsg.TimeEntriesRemove(te.Entry.Data));
         }
-
-        #region Extra
-
-        public void ReportExperiment(string actionKey, string actionValue)
-        {
-            if (Collection.Count == 0 && WelcomeScreenShouldBeShown)
-            {
-                OBMExperimentManager.Send(actionKey, actionValue, StoreManager.Singleton.AppState.User);
-            }
-        }
-
-        public bool ExperimentShouldBeShown =>
-        OBMExperimentManager.IncludedInExperiment(StoreManager.Singleton.AppState.User);
-
         public bool WelcomeScreenShouldBeShown =>
         StoreManager.Singleton.AppState.Settings.ShowWelcome;
-
-        #endregion
 
         private void UpdateSettingsAndRequestInfo(SettingsState settings, RequestInfo reqInfo)
         {
